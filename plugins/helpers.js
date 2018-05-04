@@ -1,27 +1,20 @@
 /* eslint no-restricted-globals: 0 */
 
-import Vue from 'vue';
 import MobileDetect from 'mobile-detect';
-import Helpers from 'ace-helpers';
+import Helpers from 'ace-helpers/index.es6';
 
 if (process.client) {
   // eslint-disable-next-line
   require('feature.js');
 }
 
-const config = {
-  assistUrl: process.env.assistUrl,
-  slug: process.env.slug,
-};
+export default ({ store, req }, inject) => {
+  const helpers = new Helpers({
+    assistUrl: process.env.assistUrl,
+    slug: process.env.slug,
+  });
 
-const helpers = new Helpers(config);
-
-Vue.use((Vue) => {
-  Vue.prototype.$helpers = helpers;
-});
-
-export default ({ app, store, req }) => {
-  app.$helpers = helpers;
+  inject('helpers', helpers);
 
   const ua = process.client ? window.navigator.userAgent : req.headers['user-agent'];
 

@@ -1,19 +1,13 @@
-import Vue from 'vue';
-
 class History {
   constructor() {
     return [];
   }
 }
 
-const history = new History();
+export default ({ app, store }, inject) => {
+  const history = new History();
 
-Vue.use((Vue) => {
-  Vue.prototype.$history = history;
-});
-
-export default ({ app, store }) => {
-  app.$history = history;
+  inject('history', history);
 
   let allowBackNav = false;
 

@@ -31,7 +31,7 @@ export const state = () => ({
   entities: {},
 });
 
-const setPayload = (map, payload) => {
+const setPayload = (state, map, payload) => {
   Object.keys(payload).forEach((key) => {
     Vue.set(state[map], key, payload[key]);
   });
@@ -42,13 +42,13 @@ export const mutations = {
     Vue.set(state, 'apiToken', apiToken);
   },
   METADATA(state, payload) {
-    setPayload('metadata', payload);
+    setPayload(state, 'metadata', payload);
   },
   DEVICE(state, payload) {
-    setPayload('device', payload);
+    setPayload(state, 'device', payload);
   },
   MISC(state, payload) {
-    setPayload('misc', payload);
+    setPayload(state, 'misc', payload);
   },
   HISTORY(state, fromState) {
     state.history.unshift(fromState);

@@ -13,7 +13,7 @@ const getCacheKey = config => hash({
   data: config.data,
 });
 
-export default async ({ $axios, store }) => {
+export default ({ $axios, store }) => {
   $axios.onRequest((config) => {
     config.headers.common['X-Api-Token'] = store.state.apiToken;
     return config;
