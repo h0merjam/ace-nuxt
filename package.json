@@ -30,7 +30,7 @@
     "eslint-plugin-vue": "^4.5.0"
   },
   "dependencies": {
-    "ace-helpers": "0.0.1",
+    "ace-helpers": "0.0.2",
     "feature.js": "^1.0.0",
     "lodash": "^4.17.10",
     "lru-cache": "^4.1.2",
