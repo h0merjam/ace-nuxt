@@ -32,9 +32,7 @@ export const state = () => ({
 });
 
 const setPayload = (state, map, payload) => {
-  Object.keys(payload).forEach((key) => {
-    Vue.set(state[map], key, payload[key]);
-  });
+  state[map] = Object.assign({}, state[map], payload);
 };
 
 export const mutations = {
