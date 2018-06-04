@@ -64,11 +64,13 @@ export const mutations = {
   ENTITIES(state, entities) {
     entities = entities.rows || entities.docs || entities;
     entities.forEach((entity) => {
-      entity = entity.doc || entity;
-      if (!entity._id) {
+      let id = entity.id;
+      entity = entity.doc || entity.fields || entity;
+      id = entity._id || id;
+      if (!id) {
         return;
       }
-      Vue.set(state.entities, entity._id, _.merge(state.entities[entity._id] || {}, entity));
+      Vue.set(state.entities, id, _.merge(state.entities[id] || {}, entity));
     });
   },
 };
