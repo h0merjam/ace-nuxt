@@ -43,16 +43,19 @@ export default ({ store, req }, inject) => {
   ** Viewport Dimensions
   */
   if (process.client) {
-    const setViewportVars = () => {
+    const setViewportVars = (event, init = false) => {
       setTimeout(() => {
         const availableHeight = screen.height - (screen.height - window.innerHeight);
         const isPortrait = window.matchMedia('(orientation: portrait)').matches;
         store.commit('DEVICE', { isPortrait });
+        if (init) {
+          document.documentElement.style.setProperty('--init-vh', `${availableHeight}px`);
+        }
         document.documentElement.style.setProperty('--vh', `${availableHeight}px`);
       }, 100);
     };
 
-    setViewportVars();
+    setViewportVars(null, true);
 
     window.addEventListener('orientationchange', setViewportVars);
     window.addEventListener('resize', setViewportVars);
