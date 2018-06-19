@@ -64,9 +64,14 @@ export const mutations = {
   ENTITIES(state, entities) {
     entities = entities.rows || entities.docs || entities;
     entities.forEach((entity) => {
-      let id = entity.id;
-      entity = entity.doc || entity.fields || entity;
-      id = entity._id || id;
+      let id;
+      if (entity._id) {
+        id = entity._id;
+      } else {
+        id = entity.id;
+        entity = entity.doc || entity.fields || entity;
+        id = entity._id || id;
+      }
       if (!id) {
         return;
       }
