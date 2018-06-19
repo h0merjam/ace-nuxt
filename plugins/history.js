@@ -11,7 +11,7 @@ export default ({ app, store }, inject) => {
 
   let allowBackNav = false;
 
-  const isBackNav = (prevState, toState, fromState) => {
+  const backNav = (prevState, toState, fromState) => {
     if (
       prevState.fullPath === toState.fullPath
       && fromState.fullPath.split('/').length > toState.fullPath.split('/').length
@@ -37,7 +37,8 @@ export default ({ app, store }, inject) => {
     });
 
     app.router.beforeEach((to, from, next) => {
-      if (app.$history.length && isBackNav(app.$history[0], to, from) && !allowBackNav) {
+      const isBackNav = app.$history.length && backNav(app.$history[0], to, from);
+      if (isBackNav && !allowBackNav) {
         next(false);
         window.history.back();
         allowBackNav = true;
