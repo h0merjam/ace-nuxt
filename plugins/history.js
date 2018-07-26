@@ -9,19 +9,40 @@ export default ({ app, store }, inject) => {
 
   inject('history', history);
 
-  let allowBackNav = false;
+  const userInteractionTimeout = 250;
+  let isUserTriggeredNavigation = false;
+  let disableBackNav = true;
 
-  const backNav = (prevState, toState, fromState) => {
+  const isBackNav = (toState, fromState) => {
+    if (app.$history.length < 2) {
+      return false;
+    }
+
+    const prevState = app.$history[0];
+
     if (
       prevState.fullPath === toState.fullPath
       && fromState.fullPath.split('/').length > toState.fullPath.split('/').length
     ) {
       return true;
     }
+
     return false;
   };
 
+  const interact = () => {
+    isUserTriggeredNavigation = true;
+
+    setTimeout(() => {
+      isUserTriggeredNavigation = false;
+    }, userInteractionTimeout);
+  };
+
   if (process.client) {
+    window.addEventListener('keydown', interact);
+    window.addEventListener('mousedown', interact);
+    window.addEventListener('touchstart', interact);
+
     app.router.afterEach((to, from) => {
       const state = {
         name: from.name,
@@ -37,14 +58,14 @@ export default ({ app, store }, inject) => {
     });
 
     app.router.beforeEach((to, from, next) => {
-      const isBackNav = app.$history.length && backNav(app.$history[0], to, from);
-      if (isBackNav && !allowBackNav) {
+      if (disableBackNav && isUserTriggeredNavigation && isBackNav(to, from)) {
+        disableBackNav = false;
         next(false);
         window.history.back();
-        allowBackNav = true;
         return;
       }
-      allowBackNav = false;
+
+      disableBackNav = true;
       next();
     });
   }

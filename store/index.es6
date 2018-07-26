@@ -20,6 +20,7 @@ const paramsSerializer = (params) => {
 
 export const state = () => ({
   apiToken: '',
+  config: {},
   metadata: {
     title: '',
     description: '',
@@ -38,6 +39,9 @@ const setPayload = (state, map, payload) => {
 export const mutations = {
   API_TOKEN(state, apiToken) {
     Vue.set(state, 'apiToken', apiToken);
+  },
+  CONFIG(state, config) {
+    Vue.set(state, 'config', config);
   },
   METADATA(state, payload) {
     setPayload(state, 'metadata', payload);
@@ -81,6 +85,11 @@ export const mutations = {
 };
 
 export const actions = {
+  async fetchConfig({ commit }) {
+    const result = await this.$axios.$get('config');
+    commit('CONFIG', result);
+    return result;
+  },
   async fetchMetadata({ commit }) {
     const result = await this.$axios.$get('metadata');
     commit('METADATA', result);
