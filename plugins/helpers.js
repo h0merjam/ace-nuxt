@@ -1,5 +1,6 @@
 /* eslint no-restricted-globals: 0 */
 
+import UAParser from 'ua-parser-js';
 import MobileDetect from 'mobile-detect';
 import Helpers from 'ace-helpers/index.es6';
 
@@ -17,7 +18,14 @@ export default ({ store, req }, inject) => {
   inject('helpers', helpers);
 
   const ua = process.client ? window.navigator.userAgent : req.headers['user-agent'];
+
+  const userAgent = UAParser(ua);
   const md = new MobileDetect(ua);
+
+  /*
+  ** User Agent
+  */
+  store.commit('USERAGENT', userAgent);
 
   /*
   ** Device Type

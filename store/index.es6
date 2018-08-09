@@ -25,6 +25,7 @@ export const state = () => ({
     title: '',
     description: '',
   },
+  userAgent: {},
   device: {},
   misc: {},
   history: [],
@@ -45,6 +46,9 @@ export const mutations = {
   },
   METADATA(state, payload) {
     setPayload(state, 'metadata', payload);
+  },
+  USERAGENT(state, payload) {
+    setPayload(state, 'userAgent', payload);
   },
   DEVICE(state, payload) {
     setPayload(state, 'device', payload);
