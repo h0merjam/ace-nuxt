@@ -22,10 +22,20 @@ export default ({ store, req }, inject) => {
   /*
   ** Device Type
   */
-  store.commit('DEVICE', { isMobile: !!md.mobile() });
+  store.commit('DEVICE', {
+    isMobile: !!md.mobile(),
+    isTablet: !!md.tablet(),
+    isDesktop: !!(!md.mobile() && !md.tablet()),
+  });
   if (process.client) {
     if (md.mobile()) {
       document.documentElement.classList.add('mobile');
+    }
+    if (md.tablet()) {
+      document.documentElement.classList.add('tablet');
+    }
+    if (!md.mobile() && !md.tablet()) {
+      document.documentElement.classList.add('desktop');
     }
   }
 
