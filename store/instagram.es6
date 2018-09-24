@@ -7,14 +7,17 @@ export const state = () => ({
 
 export const getters = {
   // eslint-disable-next-line
-  posts: (state, getters) => params => _.sortBy(_.filter(state.posts, (post) => {
+  posts: (state, getters) => (params = {}) => _.sortBy(_.filter(state.posts, (post) => {
+    if (params.tag) {
+      return post.tags.indexOf(params.tag) > -1;
+    }
     return true;
   }), 'created_time').reverse(),
 };
 
 export const mutations = {
-  RECENT(state, recent) {
-    recent.data.forEach((post) => {
+  POSTS(state, posts) {
+    posts.forEach((post) => {
       Vue.set(state.posts, post.id, post);
     });
   },
@@ -22,6 +25,6 @@ export const mutations = {
 
 export const actions = {
   async fetchRecent({ commit }, params) {
-    commit('RECENT', await this.$axios.$get('social/instagram/get/users/self/media/recent', { params }));
+    commit('POSTS', (await this.$axios.$get('social/instagram/get/users/self/media/recent', { params })).data);
   },
 };
