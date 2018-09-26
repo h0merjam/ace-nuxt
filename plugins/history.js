@@ -60,8 +60,15 @@ export default ({ app, store }, inject) => {
     app.router.beforeEach((to, from, next) => {
       if (disableBackNav && isUserTriggeredNavigation && isBackNav(to, from)) {
         disableBackNav = false;
+
         next(false);
-        window.history.back();
+
+        if (to.fullPath === app.$history[0].fullPath) {
+          window.history.forward();
+        } else {
+          window.history.back();
+        }
+
         return;
       }
 
