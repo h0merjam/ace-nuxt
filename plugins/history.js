@@ -64,7 +64,13 @@ export default ({ app, store }, inject) => {
         next(false);
 
         if (to.fullPath === app.$history[0].fullPath) {
+          const fullPath = window.location.href;
           window.history.forward();
+          setTimeout(() => {
+            if (fullPath === window.location.href) {
+              window.history.back();
+            }
+          }, 100);
         } else {
           window.history.back();
         }
