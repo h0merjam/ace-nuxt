@@ -1,9 +1,17 @@
 import htmlToText from 'html-to-text';
 
 export default function () {
-  const title = this.$store.state.metadata.title || process.env.siteTitle;
+  const siteTitle = process.env.siteTitle;
+  const titleChunk = this.$store.state.metadata.title;
   const description = htmlToText.fromString(this.$store.state.metadata.description);
   const image = this.$store.state.metadata.image;
+
+  // eslint-disable-next-line
+  const title = titleChunk
+    ? titleChunk.indexOf(siteTitle) === -1
+      ? `${titleChunk} | ${siteTitle}`
+      : titleChunk
+    : siteTitle;
 
   let meta = [
     { hid: 'ogTitle', name: 'og:title', content: title },
