@@ -1,15 +1,18 @@
 import Vue from 'vue';
 import { forEach, isArray, merge } from 'lodash';
-import Cookies from 'universal-cookie';
+import { serialize, parse } from 'cookie';
 
-const nuxtServerInit = async ({ commit }, { req, query }) => {
-  const cookies = new Cookies(req.headers.cookie);
+const nuxtServerInit = async ({ commit }, { req, res, query }) => {
+  const cookies = parse(req.headers.cookie || '');
+
+  let apiToken = cookies.apiToken || process.env.apiToken;
 
   if (query.apiToken) {
-    cookies.set('apiToken', query.apiToken, { maxAge: 3600 });
+    apiToken = query.apiToken;
+    res.setHeader('Set-Cookie', serialize('apiToken', apiToken, { maxAge: 3600 }));
   }
 
-  commit('API_TOKEN', cookies.get('apiToken') || process.env.apiToken);
+  commit('API_TOKEN', apiToken);
 };
 
 // Custom serializer for Lambda
