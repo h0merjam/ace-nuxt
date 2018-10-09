@@ -6,30 +6,24 @@ const cacheEnabled = true;
 const cacheMaxAge = 30 * 60 * 1000;
 const cacheMaxSize = 128 * 1000 * 1000;
 
+const cache = lruCache({
+  maxAge: cacheMaxAge,
+  max: cacheMaxSize,
+  length: item => sizeof(item),
+});
+
 const getCacheKey = config => hash({
   method: config.method,
   url: config.url.replace(config.baseURL, ''),
   params: config.params,
+  headers: config.headers,
   data: config.data,
 });
 
 export default ({ $axios, store }) => {
   $axios.onRequest((config) => {
     config.headers.common['X-Api-Token'] = store.state.apiToken;
-    return config;
-  });
 
-  if (!cacheEnabled) {
-    return;
-  }
-
-  const cache = lruCache({
-    maxAge: cacheMaxAge,
-    max: cacheMaxSize,
-    length: item => sizeof(item),
-  });
-
-  $axios.onRequest((config) => {
     if (cacheEnabled) {
       const key = getCacheKey(config);
 
@@ -64,6 +58,12 @@ export default ({ $axios, store }) => {
     try {
       // eslint-disable-next-line
       bypassCache = JSON.parse(response.config.params.__cache) === false;
+    } catch (error) {
+      //
+    }
+
+    try {
+      bypassCache = response.headers['x-role'] !== 'guest';
     } catch (error) {
       //
     }
