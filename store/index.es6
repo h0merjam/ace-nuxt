@@ -1,12 +1,23 @@
 import Vue from 'vue';
-import _ from 'lodash';
+import { forEach, isArray, merge } from 'lodash';
+import Cookies from 'universal-cookie';
+
+const nuxtServerInit = async ({ commit }, { req, query }) => {
+  const cookies = new Cookies(req.headers.cookie);
+
+  if (query.apiToken) {
+    cookies.set('apiToken', query.apiToken, { maxAge: 3600 });
+  }
+
+  commit('API_TOKEN', cookies.get('apiToken') || process.env.apiToken);
+};
 
 // Custom serializer for Lambda
 const paramsSerializer = (params) => {
   const paramsArray = [];
 
-  _.forEach(params, (value, key) => {
-    if (_.isArray(value)) {
+  forEach(params, (value, key) => {
+    if (isArray(value)) {
       value.forEach((v, i) => {
         paramsArray.push(`${key}[${i}]=${v}`);
       });
@@ -16,6 +27,10 @@ const paramsSerializer = (params) => {
   });
 
   return encodeURI(paramsArray.join('&'));
+};
+
+const setPayload = (state, map, payload) => {
+  state[map] = Object.assign({}, state[map], payload);
 };
 
 export const state = () => ({
@@ -32,10 +47,6 @@ export const state = () => ({
   taxonomies: {},
   entities: {},
 });
-
-const setPayload = (state, map, payload) => {
-  state[map] = Object.assign({}, state[map], payload);
-};
 
 export const mutations = {
   API_TOKEN(state, apiToken) {
@@ -67,7 +78,7 @@ export const mutations = {
     if (!entity._id) {
       return;
     }
-    Vue.set(state.entities, entity._id, _.merge(state.entities[entity._id] || {}, entity));
+    Vue.set(state.entities, entity._id, merge(state.entities[entity._id] || {}, entity));
   },
   ENTITIES(state, entities) {
     entities = entities.rows || entities.docs || entities;
@@ -83,12 +94,13 @@ export const mutations = {
       if (!id) {
         return;
       }
-      Vue.set(state.entities, id, _.merge(state.entities[id] || {}, entity));
+      Vue.set(state.entities, id, merge(state.entities[id] || {}, entity));
     });
   },
 };
 
 export const actions = {
+  nuxtServerInit,
   async fetchConfig({ commit }) {
     const result = await this.$axios.$get('config');
     commit('CONFIG', result);

@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { sortBy, filter } from 'lodash';
 import Vue from 'vue';
 
 export const state = () => ({
@@ -7,7 +7,7 @@ export const state = () => ({
 
 export const getters = {
   // eslint-disable-next-line
-  posts: (state, getters) => (params = {}) => _.sortBy(_.filter(state.posts, (post) => {
+  posts: (state) => (params = {}) => sortBy(filter(state.posts, (post) => {
     if (params.tag) {
       return post.tags.indexOf(params.tag) > -1;
     }
