@@ -25,6 +25,8 @@ export const mutations = {
 
 export const actions = {
   async fetchRecent({ commit }, params) {
-    commit('POSTS', (await this.$axios.$get('social/instagram/get/users/self/media/recent', { params })).data);
+    const result = await this.$axios.$get('social/instagram/get/users/self/media/recent', { params });
+    commit('POSTS', result.data);
+    return result.data;
   },
 };
