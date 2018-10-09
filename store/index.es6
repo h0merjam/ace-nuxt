@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { forEach, isArray, merge } from 'lodash';
 import { serialize, parse } from 'cookie';
 
-const nuxtServerInit = async ({ commit }, { req, res, query }) => {
+const nuxtServerInit = async ({ commit }, { app, req, res, query }) => {
   const cookies = parse(req.headers.cookie || '');
 
   let apiToken = cookies.apiToken || process.env.apiToken;
@@ -13,6 +13,10 @@ const nuxtServerInit = async ({ commit }, { req, res, query }) => {
   }
 
   commit('API_TOKEN', apiToken);
+
+  if (app.$init) {
+    await app.$init();
+  }
 };
 
 // Custom serializer for Lambda
@@ -37,7 +41,7 @@ const setPayload = (state, map, payload) => {
 };
 
 export const state = () => ({
-  apiToken: '',
+  apiToken: null,
   config: {},
   metadata: {
     title: '',
