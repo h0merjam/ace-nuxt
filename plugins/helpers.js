@@ -9,27 +9,30 @@ if (process.client) {
   require('feature.js');
 }
 
+const ASSIST_URL = process.env.ASSIST_URL;
+const SLUG = process.env.SLUG;
+
 export default ({ store, req }, inject) => {
+  /*
+  ** Helpers
+  */
   const helpers = new Helpers({
-    assistUrl: process.env.assistUrl,
-    slug: process.env.slug,
+    assistUrl: ASSIST_URL,
+    slug: SLUG,
   });
 
   inject('helpers', helpers);
 
-  const ua = process.client ? window.navigator.userAgent : req.headers['user-agent'];
-
-  const userAgent = UAParser(ua);
-  const md = new MobileDetect(ua);
-
   /*
   ** User Agent
   */
-  store.commit('USERAGENT', userAgent);
+  const userAgent = process.client ? window.navigator.userAgent : req.headers['user-agent'];
+  store.commit('USERAGENT', UAParser(userAgent));
 
   /*
   ** Device Type
   */
+  const md = new MobileDetect(userAgent);
   store.commit('DEVICE', {
     isMobile: !!md.mobile(),
     isTablet: !!md.tablet(),
@@ -65,7 +68,7 @@ export default ({ store, req }, inject) => {
       setTimeout(() => {
         const availableHeight = screen.height - (screen.height - window.innerHeight);
         const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-        store.commit('DEVICE', { isPortrait });
+        store.commit('DEVICE', { isPortrait, isLandscape: !isPortrait });
         if (init) {
           document.documentElement.style.setProperty('--init-vh', `${availableHeight}px`);
         }
@@ -92,4 +95,11 @@ export default ({ store, req }, inject) => {
       document.documentElement.classList.remove('tabbed');
     });
   }
+
+  /*
+  ** Scroll
+  */
+  inject('scrollTo', (selector, { block = 'start', behavior = 'smooth' }) => {
+    document.querySelector(selector).scrollIntoView({ block, behavior });
+  });
 };

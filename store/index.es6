@@ -5,7 +5,7 @@ import { serialize, parse } from 'cookie';
 const nuxtServerInit = async ({ commit }, { app, req, res, query }) => {
   const cookies = parse(req.headers.cookie || '');
 
-  let apiToken = cookies.apiToken || process.env.apiToken;
+  let apiToken = cookies.apiToken || process.env.API_TOKEN;
 
   if (query.apiToken) {
     apiToken = query.apiToken;
@@ -37,7 +37,7 @@ const paramsSerializer = (params) => {
 };
 
 const setPayload = (state, map, payload) => {
-  state[map] = Object.assign({}, state[map], payload);
+  state[map] = { ...state[map], ...payload };
 };
 
 export const state = () => ({

@@ -2,13 +2,13 @@ import hash from 'object-hash';
 import sizeof from 'object-sizeof';
 import lruCache from 'lru-cache';
 
-const cacheEnabled = true;
-const cacheMaxAge = 30 * 60 * 1000;
-const cacheMaxSize = 128 * 1000 * 1000;
+const CACHE_ENABLED = process.env.CACHE_ENABLED || true;
+const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 30 * 60 * 1000;
+const CACHE_MAX_SIZE = process.env.CACHE_MAX_SIZE || 128 * 1000 * 1000;
 
 const cache = lruCache({
-  maxAge: cacheMaxAge,
-  max: cacheMaxSize,
+  maxAge: CACHE_MAX_AGE,
+  max: CACHE_MAX_SIZE,
   length: item => sizeof(item),
 });
 
@@ -24,7 +24,7 @@ export default ({ $axios, store }) => {
   $axios.onRequest((config) => {
     config.headers.common['X-Api-Token'] = store.state.apiToken;
 
-    if (cacheEnabled) {
+    if (CACHE_ENABLED) {
       const key = getCacheKey(config);
 
       if (cache.has(key)) {
@@ -68,7 +68,7 @@ export default ({ $axios, store }) => {
       //
     }
 
-    if (cacheEnabled && !bypassCache && response.config.method === 'get') {
+    if (CACHE_ENABLED && !bypassCache && response.config.method === 'get') {
       const key = getCacheKey(response.config);
       cache.set(key, response.data);
     }
