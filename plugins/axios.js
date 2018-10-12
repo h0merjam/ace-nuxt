@@ -20,8 +20,10 @@ const getCacheKey = config => hash({
   data: config.data,
 });
 
-export default ({ $axios }) => {
+export default ({ $axios, store }) => {
   $axios.onRequest((config) => {
+    config.headers.common['X-Api-Token'] = store.state.apiToken;
+
     if (CACHE_ENABLED) {
       const key = getCacheKey(config);
 
@@ -54,19 +56,13 @@ export default ({ $axios }) => {
     let bypassCache = false;
 
     try {
-      // eslint-disable-next-line
+      bypassCache = response.headers['x-role'] !== 'guest';
       bypassCache = JSON.parse(response.config.params.__cache) === false;
     } catch (error) {
       //
     }
 
-    try {
-      bypassCache = response.headers['x-role'] !== 'guest';
-    } catch (error) {
-      //
-    }
-
-    if (CACHE_ENABLED && !bypassCache && response.config.method === 'get') {
+    if (CACHE_ENABLED && !bypassCache) {
       const key = getCacheKey(response.config);
       cache.set(key, response.data);
     }

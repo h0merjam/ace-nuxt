@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { forEach, isArray, merge } from 'lodash';
 import { serialize, parse } from 'cookie';
 
-const nuxtServerInit = async (store, { app, req, res, query, $axios }) => {
+const nuxtServerInit = async ({ commit }, { app, req, res, query }) => {
   const cookies = parse(req.headers.cookie || '');
 
   let apiToken = cookies.apiToken || process.env.API_TOKEN;
@@ -12,7 +12,7 @@ const nuxtServerInit = async (store, { app, req, res, query, $axios }) => {
     res.setHeader('Set-Cookie', serialize('apiToken', apiToken, { maxAge: 3600 }));
   }
 
-  $axios.setHeader('X-Api-Token', apiToken);
+  commit('API_TOKEN', apiToken);
 
   if (app.$init) {
     await app.$init();
@@ -41,6 +41,7 @@ const setPayload = (state, map, payload) => {
 };
 
 export const state = () => ({
+  apiToken: undefined,
   config: {},
   metadata: {
     title: '',
@@ -55,6 +56,9 @@ export const state = () => ({
 });
 
 export const mutations = {
+  API_TOKEN(state, apiToken) {
+    Vue.set(state, 'apiToken', apiToken);
+  },
   CONFIG(state, config) {
     Vue.set(state, 'config', config);
   },
