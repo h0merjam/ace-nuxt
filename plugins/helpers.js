@@ -99,7 +99,7 @@ export default ({ store, req }, inject) => {
   /*
   ** Scroll
   */
-  inject('scrollTo', (selector, { block = 'start', behavior = 'smooth' }) => {
+  inject('scrollTo', (selector, { block, behavior } = { block: 'start', behavior: 'smooth' }) => {
     document.querySelector(selector).scrollIntoView({ block, behavior });
   });
 };
