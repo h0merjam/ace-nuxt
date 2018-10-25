@@ -42,6 +42,7 @@ const setPayload = (state, map, payload) => {
 
 export const state = () => ({
   apiToken: undefined,
+  role: 'guest',
   config: {},
   metadata: {
     title: '',
@@ -58,6 +59,9 @@ export const state = () => ({
 export const mutations = {
   API_TOKEN(state, apiToken) {
     Vue.set(state, 'apiToken', apiToken);
+  },
+  ROLE(state, role) {
+    Vue.set(state, 'role', role);
   },
   CONFIG(state, config) {
     Vue.set(state, 'config', config);
@@ -109,13 +113,15 @@ export const mutations = {
 export const actions = {
   nuxtServerInit,
   async fetchConfig({ commit }) {
-    const result = await this.$axios.$get('config');
-    commit('CONFIG', result);
+    const result = await this.$axios.get('config');
+    commit('ROLE', result.headers['x-role']);
+    commit('CONFIG', result.data);
     return result;
   },
   async fetchMetadata({ commit }) {
-    const result = await this.$axios.$get('metadata');
-    commit('METADATA', result);
+    const result = await this.$axios.get('metadata');
+    commit('ROLE', result.headers['x-role']);
+    commit('METADATA', result.data);
     return result;
   },
   async fetchTaxonomy({ commit }, { slug }) {
