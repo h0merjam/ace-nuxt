@@ -1,6 +1,6 @@
 {
   "name": "ace-nuxt",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "Nuxt plugins for ACE projects",
   "main": "index.js",
   "scripts": {
