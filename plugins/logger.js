@@ -1,7 +1,5 @@
 import debugTrace from 'debug-trace';
 
-const LOG_LEVEL = process.env.LOG_LEVEL || 0;
-
 debugTrace({
   always: true,
 });
@@ -10,9 +8,13 @@ if (process.client) {
   console.format = c => `[${c.getFileName()}:${c.getLineNumber()}] `;
 }
 
-export default (context, inject) => {
+export default ({ env }, inject) => {
+  env = Object.assign({
+    LOG_LEVEL: 0,
+  }, env);
+
   const log = {};
-  const logLevel = parseInt(LOG_LEVEL, 10);
+  const logLevel = parseInt(env.LOG_LEVEL, 10);
 
   ['error', 'warn', 'info'].forEach((level, i) => {
     log[level] = i < logLevel ? console[level] : () => {};

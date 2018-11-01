@@ -2,10 +2,10 @@ import Vue from 'vue';
 import { forEach, isArray, merge } from 'lodash';
 import { serialize, parse } from 'cookie';
 
-const nuxtServerInit = async ({ commit }, { app, req, res, query }) => {
+const nuxtServerInit = async ({ commit }, { app, req, res, query, env }) => {
   const cookies = parse(req.headers.cookie || '');
 
-  let apiToken = cookies.apiToken || process.env.API_TOKEN;
+  let apiToken = cookies.apiToken || env.API_TOKEN;
 
   if (query.apiToken) {
     apiToken = query.apiToken;

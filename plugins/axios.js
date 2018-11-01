@@ -2,16 +2,6 @@ import hash from 'object-hash';
 import sizeof from 'object-sizeof';
 import lruCache from 'lru-cache';
 
-const CACHE_ENABLED = process.env.CACHE_ENABLED || true;
-const CACHE_MAX_AGE = process.env.CACHE_MAX_AGE || 30 * 60 * 1000;
-const CACHE_MAX_SIZE = process.env.CACHE_MAX_SIZE || 128 * 1000 * 1000;
-
-const cache = lruCache({
-  maxAge: CACHE_MAX_AGE,
-  max: CACHE_MAX_SIZE,
-  length: item => sizeof(item),
-});
-
 const getCacheKey = config => hash({
   method: config.method,
   url: config.url.replace(config.baseURL, ''),
@@ -20,11 +10,33 @@ const getCacheKey = config => hash({
   data: config.data,
 });
 
-export default ({ $axios, store }) => {
-  $axios.onRequest((config) => {
-    config.headers.common['X-Api-Token'] = store.state.apiToken;
+export default ({ $axios, store, env }) => {
+  env = Object.assign({
+    CACHE_ENABLED: true,
+    CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
+    CACHE_MAX_SIZE: 128 * 1000 * 1000, // 128mb
+  }, env);
 
-    if (CACHE_ENABLED) {
+  let cache;
+
+  if (env.CACHE_ENABLED) {
+    cache = lruCache({
+      maxAge: env.CACHE_MAX_AGE,
+      max: env.CACHE_MAX_SIZE,
+      length: item => sizeof(item),
+    });
+  }
+
+  $axios.onRequest((config) => {
+    config.headers.common['X-Api-Token'] = store.state.apiToken || env.API_TOKEN;
+
+    const role = store.state.apiToken || env.ROLE;
+
+    if (role !== 'guest') {
+      return config;
+    }
+
+    if (env.CACHE_ENABLED) {
       const key = getCacheKey(config);
 
       if (cache.has(key)) {
@@ -53,18 +65,20 @@ export default ({ $axios, store }) => {
   });
 
   $axios.onResponse((response) => {
-    let bypassCache = false;
+    if (env.CACHE_ENABLED) {
+      let bypassCache = false;
 
-    try {
-      bypassCache = response.headers['x-role'] !== 'guest';
-      bypassCache = JSON.parse(response.config.params.__cache) === false;
-    } catch (error) {
-      //
-    }
+      try {
+        bypassCache = response.headers['x-role'] !== 'guest';
+        bypassCache = JSON.parse(response.config.params.__cache) === false;
+      } catch (error) {
+        //
+      }
 
-    if (CACHE_ENABLED && !bypassCache) {
-      const key = getCacheKey(response.config);
-      cache.set(key, response.data);
+      if (!bypassCache) {
+        const key = getCacheKey(response.config);
+        cache.set(key, response.data);
+      }
     }
 
     return response;
