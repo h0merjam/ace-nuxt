@@ -2,13 +2,23 @@ import hash from 'object-hash';
 import sizeof from 'object-sizeof';
 import lruCache from 'lru-cache';
 
-const getCacheKey = config => hash({
-  method: config.method,
-  url: config.url.replace(config.baseURL, ''),
-  params: config.params,
-  headers: config.headers,
-  data: config.data,
-});
+const getCacheKey = (config) => {
+  let headers = config.headers;
+
+  if (config.headers.common) {
+    headers = Object.assign({}, config.headers.common, config.headers[config.method]);
+  }
+
+  const hashObj = {
+    method: config.method,
+    url: config.url.replace(config.baseURL, ''),
+    headers,
+    params: config.params,
+    data: config.data,
+  };
+
+  return hash(hashObj);
+};
 
 export default ({ $axios, store, env }) => {
   env = Object.assign({
@@ -30,7 +40,9 @@ export default ({ $axios, store, env }) => {
   $axios.onRequest((config) => {
     config.headers.common['X-Api-Token'] = store.state.apiToken || env.API_TOKEN;
 
-    const role = store.state.apiToken || env.ROLE;
+    const role = store.state.role || env.ROLE;
+
+    console.log(env.CACHE_ENABLED, role);
 
     if (role !== 'guest') {
       return config;
@@ -77,6 +89,7 @@ export default ({ $axios, store, env }) => {
 
       if (!bypassCache) {
         const key = getCacheKey(response.config);
+
         cache.set(key, response.data);
       }
     }
