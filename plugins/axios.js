@@ -42,8 +42,6 @@ export default ({ $axios, store, env }) => {
 
     const role = store.state.role || env.ROLE;
 
-    console.log(env.CACHE_ENABLED, role);
-
     if (role !== 'guest') {
       return config;
     }
