@@ -1,18 +1,8 @@
 import Vue from 'vue';
 import { forEach, isArray, merge } from 'lodash';
-import { serialize, parse } from 'cookie';
 
-const nuxtServerInit = async ({ commit }, { app, req, res, query, env }) => {
-  const cookies = parse(req.headers.cookie || '');
-
-  let apiToken = cookies.apiToken || env.API_TOKEN;
-
-  if (query.apiToken) {
-    apiToken = query.apiToken;
-    res.setHeader('Set-Cookie', serialize('apiToken', apiToken, { maxAge: 3600 }));
-  }
-
-  commit('API_TOKEN', apiToken);
+const nuxtServerInit = async ({ commit }, { app }) => {
+  commit('RESET');
 
   if (app.$init) {
     await app.$init();
@@ -40,8 +30,7 @@ const setPayload = (state, map, payload) => {
   state[map] = { ...state[map], ...payload };
 };
 
-export const state = () => ({
-  apiToken: undefined,
+const initialState = () => ({
   role: 'guest',
   config: {},
   metadata: {
@@ -56,9 +45,11 @@ export const state = () => ({
   entities: {},
 });
 
+export const state = () => initialState();
+
 export const mutations = {
-  API_TOKEN(state, apiToken) {
-    Vue.set(state, 'apiToken', apiToken);
+  RESET(state) {
+    Object.assign(state, initialState());
   },
   ROLE(state, role) {
     Vue.set(state, 'role', role);
@@ -113,15 +104,13 @@ export const mutations = {
 export const actions = {
   nuxtServerInit,
   async fetchConfig({ commit }) {
-    const result = await this.$axios.get('config');
-    commit('ROLE', result.headers['x-role']);
-    commit('CONFIG', result.data);
+    const result = await this.$axios.$get('config');
+    commit('CONFIG', result);
     return result;
   },
   async fetchMetadata({ commit }) {
-    const result = await this.$axios.get('metadata');
-    commit('ROLE', result.headers['x-role']);
-    commit('METADATA', result.data);
+    const result = await this.$axios.$get('metadata');
+    commit('METADATA', result);
     return result;
   },
   async fetchTaxonomy({ commit }, { slug }) {

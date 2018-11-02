@@ -1,6 +1,7 @@
 import hash from 'object-hash';
 import sizeof from 'object-sizeof';
 import lruCache from 'lru-cache';
+import { parse, serialize } from 'cookie';
 
 const getCacheKey = (config) => {
   let headers = config.headers;
@@ -20,7 +21,7 @@ const getCacheKey = (config) => {
   return hash(hashObj);
 };
 
-export default ({ $axios, store, env }) => {
+export default ({ $axios, env, store, req, res, query }) => {
   env = Object.assign({
     CACHE_ENABLED: true,
     CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
@@ -38,15 +39,20 @@ export default ({ $axios, store, env }) => {
   }
 
   $axios.onRequest((config) => {
-    config.headers.common['X-Api-Token'] = store.state.apiToken || env.API_TOKEN;
+    let cookies = {};
+    if (req && req.headers.cookie) {
+      cookies = parse(req.headers.cookie);
+    }
+
+    if (res && query.apiToken) {
+      res.setHeader('Set-Cookie', serialize('apiToken', query.apiToken, { maxAge: 3600 }));
+    }
+
+    config.headers.common['x-api-token'] = query.apiToken || cookies.apiToken || env.API_TOKEN;
 
     const role = store.state.role || env.ROLE;
 
-    if (role !== 'guest') {
-      return config;
-    }
-
-    if (env.CACHE_ENABLED) {
+    if (env.CACHE_ENABLED && role === 'guest') {
       const key = getCacheKey(config);
 
       if (cache.has(key)) {
@@ -75,20 +81,24 @@ export default ({ $axios, store, env }) => {
   });
 
   $axios.onResponse((response) => {
-    if (env.CACHE_ENABLED) {
-      let bypassCache = false;
+    if (response.headers['x-role']) {
+      store.commit('ROLE', response.headers['x-role']);
+    }
+
+    const role = store.state.role || env.ROLE;
+
+    if (env.CACHE_ENABLED && role === 'guest') {
+      let maxAge = env.CACHE_MAX_AGE;
 
       try {
-        bypassCache = response.headers['x-role'] !== 'guest';
-        bypassCache = JSON.parse(response.config.params.__cache) === false;
+        maxAge = JSON.parse(response.config.params.__cache);
       } catch (error) {
         //
       }
 
-      if (!bypassCache) {
+      if (maxAge !== false) {
         const key = getCacheKey(response.config);
-
-        cache.set(key, response.data);
+        cache.set(key, response.data, maxAge);
       }
     }
 
