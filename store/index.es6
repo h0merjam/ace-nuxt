@@ -27,7 +27,7 @@ const paramsSerializer = (params) => {
 };
 
 const setPayload = (state, map, payload) => {
-  state[map] = { ...state[map], ...payload };
+  state[map] = Object.assign({}, state[map], payload);
 };
 
 const initialState = () => ({
