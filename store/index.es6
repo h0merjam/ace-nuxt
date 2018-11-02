@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { forEach, isArray, merge } from 'lodash';
 
 const nuxtServerInit = async ({ commit }, { app }) => {
-  commit('RESET');
+  commit('INIT');
 
   if (app.$init) {
     await app.$init();
@@ -48,7 +48,7 @@ const initialState = () => ({
 export const state = () => initialState();
 
 export const mutations = {
-  RESET(state) {
+  INIT(state) {
     Object.assign(state, initialState());
   },
   ROLE(state, role) {

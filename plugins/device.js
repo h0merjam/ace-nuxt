@@ -8,22 +8,17 @@ if (process.client) {
   require('feature.js');
 }
 
-export default ({ store, req }, inject) => {
+export default ({ app, store, req }, inject) => {
   /*
   ** User Agent
   */
   const userAgent = process.client ? window.navigator.userAgent : req.headers['user-agent'];
-  store.commit('USERAGENT', UAParser(userAgent));
 
   /*
   ** Device Type
   */
   const md = new MobileDetect(userAgent);
-  store.commit('DEVICE', {
-    isMobile: !!md.mobile(),
-    isTablet: !!md.tablet(),
-    isDesktop: !!(!md.mobile() && !md.tablet()),
-  });
+
   if (process.client) {
     if (md.mobile()) {
       document.documentElement.classList.add('mobile');
@@ -87,5 +82,21 @@ export default ({ store, req }, inject) => {
   */
   inject('scrollTo', (selector, { block, behavior } = { block: 'start', behavior: 'smooth' }) => {
     document.querySelector(selector).scrollIntoView({ block, behavior });
+  });
+
+  app.$init(() => {
+    /*
+    ** User Agent
+    */
+    store.commit('USERAGENT', UAParser(userAgent));
+
+    /*
+    ** Device Type
+    */
+    store.commit('DEVICE', {
+      isMobile: !!md.mobile(),
+      isTablet: !!md.tablet(),
+      isDesktop: !!(!md.mobile() && !md.tablet()),
+    });
   });
 };
