@@ -1,6 +1,6 @@
 import hash from 'object-hash';
 import sizeof from 'object-sizeof';
-import lruCache from 'lru-cache';
+import LruCache from 'lru-cache';
 import { parse, serialize } from 'cookie';
 
 const getCacheKey = (config) => {
@@ -31,7 +31,7 @@ export default ({ $axios, env, store, req, res, query }) => {
   let cache;
 
   if (env.CACHE_ENABLED) {
-    cache = lruCache({
+    cache = new LruCache({
       maxAge: env.CACHE_MAX_AGE,
       max: env.CACHE_MAX_SIZE,
       length: item => sizeof(item),
