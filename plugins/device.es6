@@ -31,6 +31,12 @@ export default ({ app, store, req }, inject) => {
     }
   }
 
+  inject('device', {
+    isMobile: !!md.mobile(),
+    isTablet: !!md.tablet(),
+    isDesktop: !!(!md.mobile() && !md.tablet()),
+  });
+
   /*
   ** Window Loaded
   */
