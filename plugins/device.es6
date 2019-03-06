@@ -1,5 +1,6 @@
 /* eslint no-restricted-globals: 0 */
 
+import _ from 'lodash';
 import UAParser from 'ua-parser-js';
 import MobileDetect from 'mobile-detect';
 
@@ -12,12 +13,28 @@ export default ({ app, store, req }, inject) => {
   /*
   ** User Agent
   */
-  const userAgent = process.client ? window.navigator.userAgent : req.headers['user-agent'];
+  const ua = process.client ? window.navigator.userAgent : req.headers['user-agent'];
+  const userAgent = UAParser(ua);
+
+  inject('userAgent', userAgent);
+
+  if (process.client) {
+    document.documentElement.classList.add(_.kebabCase(userAgent.browser.name));
+    document.documentElement.classList.add(_.kebabCase(userAgent.os.name));
+  }
 
   /*
   ** Device Type
   */
-  const md = new MobileDetect(userAgent);
+  const md = new MobileDetect(ua);
+
+  const device = {
+    isMobile: !!md.mobile(),
+    isTablet: !!md.tablet(),
+    isDesktop: !!(!md.mobile() && !md.tablet()),
+  };
+
+  inject('device', device);
 
   if (process.client) {
     if (md.mobile()) {
@@ -30,12 +47,6 @@ export default ({ app, store, req }, inject) => {
       document.documentElement.classList.add('desktop');
     }
   }
-
-  inject('device', {
-    isMobile: !!md.mobile(),
-    isTablet: !!md.tablet(),
-    isDesktop: !!(!md.mobile() && !md.tablet()),
-  });
 
   /*
   ** Window Loaded
@@ -94,15 +105,11 @@ export default ({ app, store, req }, inject) => {
     /*
     ** User Agent
     */
-    store.commit('USERAGENT', UAParser(userAgent));
+    store.commit('USERAGENT', userAgent);
 
     /*
     ** Device Type
     */
-    store.commit('DEVICE', {
-      isMobile: !!md.mobile(),
-      isTablet: !!md.tablet(),
-      isDesktop: !!(!md.mobile() && !md.tablet()),
-    });
+    store.commit('DEVICE', device);
   });
 };
