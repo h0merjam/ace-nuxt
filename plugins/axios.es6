@@ -1,7 +1,8 @@
-import hash from 'object-hash';
-import sizeof from 'object-sizeof';
-import LruCache from 'lru-cache';
+import _ from 'lodash';
+import hash from 'hash-obj';
+// import sizeof from 'object-sizeof';
 import { parse, serialize } from 'cookie';
+import QuickLRU from 'quick-lru';
 
 const getCacheKey = (config) => {
   let headers = config.headers;
@@ -18,23 +19,29 @@ const getCacheKey = (config) => {
     data: config.data,
   };
 
-  return hash(hashObj);
+  return hash(_.toPlainObject(hashObj), { encoding: 'string' });
 };
+
+// TODO: check time and maxAge of stored value and destroy if necessary
+const cacheGet = (cache, key, maxAge) => cache.get(key);
+
+// TODO: set time and maxAge on stored value
+const cacheSet = (cache, key, value, maxAge) => cache.set(key, value);
 
 export default ({ $axios, env, store, req, res, query }) => {
   env = Object.assign({
     CACHE_ENABLED: true,
     CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
-    CACHE_MAX_SIZE: 128 * 1000 * 1000, // 128mb
+    // CACHE_MAX_SIZE: 128 * 1000 * 1000, // 128mb
+    // TODO: reimplement max size based on memory
+    CACHE_MAX_SIZE: 1000,
   }, env);
 
   let cache;
 
   if (env.CACHE_ENABLED) {
-    cache = new LruCache({
-      maxAge: env.CACHE_MAX_AGE,
-      max: env.CACHE_MAX_SIZE,
-      length: item => sizeof(item),
+    cache = new QuickLRU({
+      maxSize: env.CACHE_MAX_SIZE,
     });
   }
 
@@ -56,7 +63,7 @@ export default ({ $axios, env, store, req, res, query }) => {
       const key = getCacheKey(config);
 
       if (cache.has(key)) {
-        const data = cache.get(key);
+        const data = cacheGet(cache, key);
 
         config.data = data;
 
@@ -98,7 +105,7 @@ export default ({ $axios, env, store, req, res, query }) => {
 
       if (maxAge !== false) {
         const key = getCacheKey(response.config);
-        cache.set(key, response.data, maxAge);
+        cacheSet(cache, key, response.data, maxAge);
       }
     }
 
