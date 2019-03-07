@@ -19,7 +19,7 @@ const getCacheKey = (config) => {
     data: config.data,
   };
 
-  return hash(_.toPlainObject(hashObj), { encoding: 'string' });
+  return hash(_.toPlainObject(hashObj));
 };
 
 // TODO: check time and maxAge of stored value and destroy if necessary
