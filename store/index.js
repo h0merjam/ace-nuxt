@@ -10,7 +10,7 @@ const nuxtServerInit = async ({ commit }, { app }) => {
 };
 
 // Custom serializer for Lambda
-const paramsSerializer = (params) => {
+const paramsSerializer = params => {
   const paramsArray = [];
 
   forEach(params, (value, key) => {
@@ -80,11 +80,15 @@ export const mutations = {
     if (!entity._id) {
       return;
     }
-    Vue.set(state.entities, entity._id, merge(state.entities[entity._id] || {}, entity));
+    Vue.set(
+      state.entities,
+      entity._id,
+      merge(state.entities[entity._id] || {}, entity)
+    );
   },
   ENTITIES(state, entities) {
     entities = entities.rows || entities.docs || entities;
-    entities.forEach((entity) => {
+    entities.forEach(entity => {
       let id;
       if (entity._id) {
         id = entity._id;

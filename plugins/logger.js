@@ -9,9 +9,12 @@ if (process.client) {
 }
 
 export default ({ env }, inject) => {
-  env = Object.assign({
-    LOG_LEVEL: 0,
-  }, env);
+  env = Object.assign(
+    {
+      LOG_LEVEL: 0,
+    },
+    env
+  );
 
   const log = {};
   const logLevel = parseInt(env.LOG_LEVEL, 10);

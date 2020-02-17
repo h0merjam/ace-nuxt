@@ -1,12 +1,13 @@
 import htmlToText from 'html-to-text';
 
-export default function () {
+export default function() {
   const siteTitle = process.env.SITE_TITLE || '';
   const titleChunk = this.$store.state.metadata.title;
-  const description = htmlToText.fromString(this.$store.state.metadata.description);
+  const description = htmlToText.fromString(
+    this.$store.state.metadata.description
+  );
   const image = this.$store.state.metadata.image;
 
-  // eslint-disable-next-line
   const title = titleChunk
     ? titleChunk.indexOf(siteTitle) === -1
       ? `${titleChunk} | ${siteTitle}`
@@ -19,7 +20,11 @@ export default function () {
 
     { hid: 'description', name: 'description', content: description },
     { hid: 'ogDescription', name: 'og:description', content: description },
-    { hid: 'twitterDescription', name: 'twitter:description', content: description },
+    {
+      hid: 'twitterDescription',
+      name: 'twitter:description',
+      content: description,
+    },
   ];
 
   if (image) {

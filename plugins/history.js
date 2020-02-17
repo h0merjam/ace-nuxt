@@ -21,8 +21,8 @@ export default ({ app, store }, inject) => {
     const prevState = app.$history[0];
 
     if (
-      prevState.fullPath === toState.fullPath
-      && fromState.fullPath.split('/').length > toState.fullPath.split('/').length
+      prevState.fullPath === toState.fullPath &&
+      fromState.fullPath.split('/').length > toState.fullPath.split('/').length
     ) {
       return true;
     }

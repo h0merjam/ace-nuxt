@@ -1,7 +1,7 @@
 export default (context, inject) => {
   const hooks = [];
 
-  const init = async (hook) => {
+  const init = async hook => {
     if (hook) {
       hooks.push(hook);
       return;

@@ -1,31 +1,30 @@
-/* eslint no-restricted-globals: 0 */
-
-import _ from 'lodash';
+import kebabCase from 'lodash/kebabCase';
 import UAParser from 'ua-parser-js';
 import MobileDetect from 'mobile-detect';
 
 if (process.client) {
-  // eslint-disable-next-line
   require('feature.js');
 }
 
 export default ({ app, store, req }, inject) => {
   /*
-  ** User Agent
-  */
-  const ua = process.client ? window.navigator.userAgent : req.headers['user-agent'];
+   ** User Agent
+   */
+  const ua = process.client
+    ? window.navigator.userAgent
+    : req.headers['user-agent'];
   const userAgent = UAParser(ua);
 
   inject('userAgent', userAgent);
 
   if (process.client) {
-    document.documentElement.classList.add(_.kebabCase(userAgent.browser.name));
-    document.documentElement.classList.add(_.kebabCase(userAgent.os.name));
+    document.documentElement.classList.add(kebabCase(userAgent.browser.name));
+    document.documentElement.classList.add(kebabCase(userAgent.os.name));
   }
 
   /*
-  ** Device Type
-  */
+   ** Device Type
+   */
   const md = new MobileDetect(ua);
 
   const device = {
@@ -49,28 +48,39 @@ export default ({ app, store, req }, inject) => {
   }
 
   /*
-  ** Window Loaded
-  */
+   ** Window Loaded
+   */
   if (process.client) {
-    window.addEventListener('load', () => {
-      store.commit('DEVICE', { isLoaded: true });
-      document.documentElement.classList.add('loaded');
-    }, { once: true });
+    window.addEventListener(
+      'load',
+      () => {
+        store.commit('DEVICE', { isLoaded: true });
+        document.documentElement.classList.add('loaded');
+      },
+      { once: true }
+    );
   }
 
   /*
-  ** Viewport Dimensions
-  */
+   ** Viewport Dimensions
+   */
   if (process.client) {
     const setViewportVars = (event, init = false) => {
       setTimeout(() => {
-        const availableHeight = screen.height - (screen.height - window.innerHeight);
+        const availableHeight =
+          screen.height - (screen.height - window.innerHeight);
         const isPortrait = window.matchMedia('(orientation: portrait)').matches;
         store.commit('DEVICE', { isPortrait, isLandscape: !isPortrait });
         if (init) {
-          document.documentElement.style.setProperty('--ah-init', `${availableHeight}px`);
+          document.documentElement.style.setProperty(
+            '--ah-init',
+            `${availableHeight}px`
+          );
         }
-        document.documentElement.style.setProperty('--ah', `${availableHeight}px`);
+        document.documentElement.style.setProperty(
+          '--ah',
+          `${availableHeight}px`
+        );
       }, 100);
     };
 
@@ -81,10 +91,10 @@ export default ({ app, store, req }, inject) => {
   }
 
   /*
-  ** Tabbing
-  */
+   ** Tabbing
+   */
   if (process.client) {
-    document.addEventListener('keydown', (event) => {
+    document.addEventListener('keydown', event => {
       if (event.keyCode === 9) {
         document.documentElement.classList.add('tabbed');
       }
@@ -95,21 +105,27 @@ export default ({ app, store, req }, inject) => {
   }
 
   /*
-  ** Scroll
-  */
-  inject('scrollTo', (selector, { block, behavior } = { block: 'start', behavior: 'smooth' }) => {
-    document.querySelector(selector).scrollIntoView({ block, behavior });
-  });
+   ** Scroll
+   */
+  inject(
+    'scrollTo',
+    (
+      selector,
+      { block, behavior } = { block: 'start', behavior: 'smooth' }
+    ) => {
+      document.querySelector(selector).scrollIntoView({ block, behavior });
+    }
+  );
 
   app.$init(() => {
     /*
-    ** User Agent
-    */
+     ** User Agent
+     */
     store.commit('USERAGENT', userAgent);
 
     /*
-    ** Device Type
-    */
+     ** Device Type
+     */
     store.commit('DEVICE', device);
   });
 };

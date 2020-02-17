@@ -1,4 +1,4 @@
-import Helpers from 'ace-helpers/index.es6';
+import Helpers from 'ace-helpers';
 
 export default ({ env }, inject) => {
   const helpers = new Helpers({
