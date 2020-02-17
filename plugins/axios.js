@@ -1,7 +1,7 @@
 import toPlainObject from 'lodash/toPlainObject';
 import hash from 'hash-obj';
 // import sizeof from 'object-sizeof';
-import cookie from 'cookie';
+import * as cookie from 'cookie';
 import QuickLRU from 'quick-lru';
 
 const getCacheKey = config => {
