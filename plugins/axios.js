@@ -1,7 +1,7 @@
 import toPlainObject from 'lodash/toPlainObject';
 import hash from 'hash-obj';
 // import sizeof from 'object-sizeof';
-import * as cookie from 'cookie';
+import * as Cookies from 'es-cookie';
 import QuickLRU from 'quick-lru';
 
 const getCacheKey = config => {
@@ -58,13 +58,13 @@ export default ({ $axios, env, store, req, res, query }) => {
     config => {
       let cookies = {};
       if (req && req.headers.cookie) {
-        cookies = cookie.parse(req.headers.cookie);
+        cookies = Cookies.parse(req.headers.cookie);
       }
 
       if (res && query.apiToken) {
         res.setHeader(
           'Set-Cookie',
-          cookie.serialize('apiToken', query.apiToken, { maxAge: 3600 })
+          Cookies.encode('apiToken', query.apiToken, { maxAge: 3600 })
         );
       }
 
