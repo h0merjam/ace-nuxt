@@ -1,5 +1,6 @@
-import { sortBy, filter } from 'lodash';
 import Vue from 'vue';
+import filter from 'lodash/filter';
+import sortBy from 'lodash/sortBy';
 
 export const state = () => ({
   posts: {},
