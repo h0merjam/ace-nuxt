@@ -62,9 +62,14 @@ export default ({ $axios, env, store, req, res, query }) => {
       }
 
       if (res && query.apiToken) {
+        let expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+
         res.setHeader(
           'Set-Cookie',
-          Cookies.encode('apiToken', query.apiToken, { maxAge: 3600 })
+          Cookies.encode('apiToken', query.apiToken, {
+            expires,
+          })
         );
       }
 
