@@ -1,4 +1,4 @@
-export default ({ app }, inject) => {
+export default ({ res, nuxtState }, inject) => {
   const hooks = [];
 
   const init = async hook => {
@@ -6,7 +6,7 @@ export default ({ app }, inject) => {
       hooks.push(hook);
 
       // Execute hook immediately in `spa` mode
-      if (!app.context.nuxtState) {
+      if (!res && !nuxtState) {
         await hook();
       }
 
