@@ -5,22 +5,33 @@ import * as Cookies from 'es-cookie';
 import QuickLRU from 'quick-lru';
 
 const getCacheKey = config => {
-  let headers = config.headers;
+  let headers = Object.assign(
+    config.headers.common || {},
+    config.headers || {}
+  );
 
-  if (config.headers.common) {
-    headers = Object.assign(
-      {},
-      config.headers.common,
-      config.headers[config.method]
-    );
+  delete headers.common;
+  delete headers.head;
+  delete headers.get;
+  delete headers.post;
+  delete headers.put;
+  delete headers.patch;
+  delete headers.delete;
+
+  let data = config.data;
+
+  try {
+    data = JSON.parse(data);
+  } catch (error) {
+    //
   }
 
   const hashObj = {
     method: config.method,
     url: config.url.replace(config.baseURL, ''),
-    headers,
+    token: headers['x-api-token'],
     params: config.params,
-    data: config.data,
+    data,
   };
 
   return hash(toPlainObject(hashObj));
