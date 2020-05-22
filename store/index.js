@@ -12,7 +12,7 @@ const nuxtServerInit = async ({ commit }, { app }) => {
 };
 
 // Custom serializer for Lambda
-const paramsSerializer = params => {
+const paramsSerializer = (params) => {
   const paramsArray = [];
 
   forEach(params, (value, key) => {
@@ -90,7 +90,7 @@ export const mutations = {
   },
   ENTITIES(state, entities) {
     entities = entities.rows || entities.docs || entities;
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       let id;
       if (entity._id) {
         id = entity._id;
@@ -119,9 +119,11 @@ export const actions = {
     commit('METADATA', result);
     return result;
   },
-  async fetchTaxonomy({ commit }, { slug }) {
-    const result = await this.$axios.$get('taxonomy', { params: { slug } });
-    commit('TAXONOMY', result);
+  async fetchTaxonomy({ commit }, { taxonomySlug }) {
+    const result = await this.$axios.$get('taxonomy', {
+      params: { taxonomySlug },
+    });
+    commit('TAXONOMY', result[taxonomySlug]);
     return result;
   },
   async fetchEntities({ commit }, { method, path, params, data }) {

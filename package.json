@@ -26,7 +26,7 @@
     "eslint": "^6.8.0"
   },
   "dependencies": {
-    "ace-helpers": "^0.1.1",
+    "ace-helpers": "^0.2.0",
     "debug-trace": "^2.2.2",
     "es-cookie": "^1.3.2",
     "feature.js": "^1.0.0",
