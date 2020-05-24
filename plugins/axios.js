@@ -5,6 +5,11 @@ import * as Cookies from 'es-cookie';
 import QuickLRU from 'quick-lru';
 
 const getCacheKey = (config) => {
+  let headers = {
+    ...(config.headers.common || {}),
+    ...(config.headers || {}),
+  };
+
   let data = config.data;
 
   try {
@@ -16,7 +21,7 @@ const getCacheKey = (config) => {
   const hashObj = {
     method: config.method,
     url: config.url.replace(config.baseURL, ''),
-    token: config.headers.common['x-api-token'],
+    token: headers['x-api-token'],
     params: config.params,
     data,
   };
