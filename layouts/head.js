@@ -1,6 +1,6 @@
 import htmlToText from 'html-to-text';
 
-export default function() {
+export default function () {
   const siteTitle = process.env.SITE_TITLE || '';
   const titleChunk = this.$store.state.metadata.title;
   const description = htmlToText.fromString(

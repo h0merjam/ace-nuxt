@@ -4,20 +4,7 @@ import hash from 'hash-obj';
 import * as Cookies from 'es-cookie';
 import QuickLRU from 'quick-lru';
 
-const getCacheKey = config => {
-  let headers = Object.assign(
-    config.headers.common || {},
-    config.headers || {}
-  );
-
-  delete headers.common;
-  delete headers.head;
-  delete headers.get;
-  delete headers.post;
-  delete headers.put;
-  delete headers.patch;
-  delete headers.delete;
-
+const getCacheKey = (config) => {
   let data = config.data;
 
   try {
@@ -29,7 +16,7 @@ const getCacheKey = config => {
   const hashObj = {
     method: config.method,
     url: config.url.replace(config.baseURL, ''),
-    token: headers['x-api-token'],
+    token: config.headers.common['x-api-token'],
     params: config.params,
     data,
   };
@@ -45,28 +32,41 @@ const cacheGet = (cache, key, maxAge) => cache.get(key);
 // eslint-disable-next-line
 const cacheSet = (cache, key, value, maxAge) => cache.set(key, value);
 
-export default ({ $axios, env, store, req, res, query }) => {
-  env = Object.assign(
-    {
-      CACHE_ENABLED: true,
-      CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
-      // CACHE_MAX_SIZE: 128 * 1000 * 1000, // 128mb
-      // TODO: reimplement max size based on memory
-      CACHE_MAX_SIZE: 1000,
-    },
-    env
-  );
+export default ({ $axios, env, store, req, res, query }, inject) => {
+  const options = {
+    API_URL: '',
+    API_TOKEN: '',
+    DEBUG: false,
+    CACHE_ENABLED: true,
+    CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
+    // CACHE_MAX_SIZE: 128 * 1000 * 1000, // 128mb
+    // TODO: reimplement max size based on memory
+    CACHE_MAX_SIZE: 1000,
+    ROLE: 'guest',
+    ...env,
+  };
 
   let cache;
 
-  if (env.CACHE_ENABLED) {
+  if (options.CACHE_ENABLED) {
     cache = new QuickLRU({
-      maxSize: env.CACHE_MAX_SIZE,
+      maxSize: options.CACHE_MAX_SIZE,
     });
   }
 
-  $axios.onRequest(
-    config => {
+  const api = $axios.create({
+    debug: options.DEBUG,
+    proxyHeaders: false,
+    baseURL: options.API_URL,
+    headers: {
+      common: {
+        'x-api-token': options.API_TOKEN,
+      },
+    },
+  });
+
+  api.onRequest(
+    (config) => {
       let cookies = {};
       if (req && req.headers.cookie) {
         cookies = Cookies.parse(req.headers.cookie);
@@ -85,11 +85,11 @@ export default ({ $axios, env, store, req, res, query }) => {
       }
 
       config.headers.common['x-api-token'] =
-        query.apiToken || cookies.apiToken || env.API_TOKEN;
+        query.apiToken || cookies.apiToken || options.API_TOKEN;
 
-      const role = store.state.role || env.ROLE;
+      const role = store.state.role || options.ROLE;
 
-      if (env.CACHE_ENABLED && role === 'guest') {
+      if (options.CACHE_ENABLED && role === 'guest') {
         const key = getCacheKey(config);
 
         if (cache.has(key)) {
@@ -113,23 +113,23 @@ export default ({ $axios, env, store, req, res, query }) => {
 
       return config;
     },
-    error => {
+    (error) => {
       // eslint-disable-next-line
       console.error(error);
       return Promise.reject(error);
     }
   );
 
-  $axios.onResponse(
-    response => {
+  api.onResponse(
+    (response) => {
       if (response.headers['x-role']) {
         store.commit('ROLE', response.headers['x-role']);
       }
 
-      const role = store.state.role || env.ROLE;
+      const role = store.state.role || options.ROLE;
 
-      if (env.CACHE_ENABLED && role === 'guest') {
-        let maxAge = env.CACHE_MAX_AGE;
+      if (options.CACHE_ENABLED && role === 'guest') {
+        let maxAge = options.CACHE_MAX_AGE;
 
         try {
           maxAge = JSON.parse(response.config.params.__cache);
@@ -145,10 +145,12 @@ export default ({ $axios, env, store, req, res, query }) => {
 
       return response;
     },
-    error => {
+    (error) => {
       // eslint-disable-next-line
       console.error(error);
       return Promise.reject(error);
     }
   );
+
+  inject('api', api);
 };

@@ -7,9 +7,9 @@ export const state = () => ({
 });
 
 export const getters = {
-  posts: state => (params = {}) =>
+  posts: (state) => (params = {}) =>
     sortBy(
-      filter(state.posts, post => {
+      filter(state.posts, (post) => {
         if (params.tag) {
           return post.tags.indexOf(params.tag) > -1;
         }
@@ -21,7 +21,7 @@ export const getters = {
 
 export const mutations = {
   POSTS(state, posts) {
-    posts.forEach(post => {
+    posts.forEach((post) => {
       Vue.set(state.posts, post.id, post);
     });
   },
@@ -29,7 +29,7 @@ export const mutations = {
 
 export const actions = {
   async fetchRecent({ commit }, params) {
-    const result = await this.$axios.$get(
+    const result = await this.$api.$get(
       'social/instagram/get/users/self/media/recent',
       { params }
     );

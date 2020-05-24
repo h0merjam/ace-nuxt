@@ -94,7 +94,7 @@ export default ({ app, store, req }, inject) => {
    ** Tabbing
    */
   if (process.client) {
-    document.addEventListener('keydown', event => {
+    document.addEventListener('keydown', (event) => {
       if (event.keyCode === 9) {
         document.documentElement.classList.add('tabbed');
       }

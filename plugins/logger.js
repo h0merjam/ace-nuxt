@@ -5,7 +5,7 @@ debugTrace({
 });
 
 if (process.client) {
-  console.format = c => `[${c.getFileName()}:${c.getLineNumber()}] `;
+  console.format = (c) => `[${c.getFileName()}:${c.getLineNumber()}] `;
 }
 
 export default ({ env }, inject) => {

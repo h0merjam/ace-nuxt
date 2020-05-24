@@ -1,7 +1,7 @@
 export default ({ res, nuxtState }, inject) => {
   const hooks = [];
 
-  const init = async hook => {
+  const init = async (hook) => {
     if (hook) {
       hooks.push(hook);
 
@@ -13,7 +13,7 @@ export default ({ res, nuxtState }, inject) => {
       return;
     }
 
-    await Promise.all(hooks.map(hook => hook()));
+    await Promise.all(hooks.map((hook) => hook()));
 
     return;
   };

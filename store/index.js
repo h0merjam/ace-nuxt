@@ -110,24 +110,24 @@ export const mutations = {
 export const actions = {
   nuxtServerInit,
   async fetchConfig({ commit }) {
-    const result = await this.$axios.$get('config');
+    const result = await this.$api.$get('config');
     commit('CONFIG', result);
     return result;
   },
   async fetchMetadata({ commit }) {
-    const result = await this.$axios.$get('metadata');
+    const result = await this.$api.$get('metadata');
     commit('METADATA', result);
     return result;
   },
   async fetchTaxonomy({ commit }, { taxonomySlug }) {
-    const result = await this.$axios.$get('taxonomy', {
+    const result = await this.$api.$get('taxonomy', {
       params: { taxonomySlug },
     });
     commit('TAXONOMY', result[taxonomySlug]);
     return result;
   },
   async fetchEntities({ commit }, { method, path, params, data }) {
-    const result = await this.$axios.$request({
+    const result = await this.$api.$request({
       url: path || 'entities',
       method: method || 'get',
       params,
