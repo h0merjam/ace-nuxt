@@ -1,7 +1,7 @@
 import toPlainObject from 'lodash/toPlainObject';
 import hash from 'hash-obj';
-// import sizeof from 'object-sizeof';
 import * as Cookies from 'es-cookie';
+import Filru from 'filru';
 import QuickLRU from 'quick-lru';
 
 const getCacheKey = (config) => {
@@ -29,24 +29,19 @@ const getCacheKey = (config) => {
   return hash(toPlainObject(hashObj));
 };
 
-// TODO: check time and maxAge of stored value and destroy if necessary
-// eslint-disable-next-line
-const cacheGet = (cache, key, maxAge) => cache.get(key);
+const cacheGet = async (cache, key) => JSON.parse(await cache.get(key));
 
-// TODO: set time and maxAge on stored value
-// eslint-disable-next-line
-const cacheSet = (cache, key, value, maxAge) => cache.set(key, value);
+const cacheSet = async (cache, key, value) =>
+  await cache.set(key, JSON.stringify(await value));
 
-export default ({ $axios, env, store, req, res, query }, inject) => {
+export default async ({ $axios, env, store, req, res, query }, inject) => {
   const options = {
     API_URL: '',
     API_TOKEN: '',
     DEBUG: false,
     CACHE_ENABLED: true,
     CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
-    // CACHE_MAX_SIZE: 128 * 1000 * 1000, // 128mb
-    // TODO: reimplement max size based on memory
-    CACHE_MAX_SIZE: 1000,
+    CACHE_MAX_SIZE: 50 * 1024 * 1024, // 50mb
     ROLE: 'guest',
     ...env,
   };
@@ -54,9 +49,20 @@ export default ({ $axios, env, store, req, res, query }, inject) => {
   let cache;
 
   if (options.CACHE_ENABLED) {
-    cache = new QuickLRU({
-      maxSize: options.CACHE_MAX_SIZE,
-    });
+    if (process.server) {
+      cache = new Filru({
+        dir: '/tmp/filru',
+        maxBytes: options.CACHE_MAX_SIZE,
+        maxAge: options.CACHE_MAX_AGE,
+      });
+      await cache.start();
+    }
+
+    if (process.client) {
+      cache = new QuickLRU({
+        maxSize: Infinity,
+      });
+    }
   }
 
   const api = $axios.create({
@@ -71,7 +77,7 @@ export default ({ $axios, env, store, req, res, query }, inject) => {
   });
 
   api.onRequest(
-    (config) => {
+    async (config) => {
       let cookies = {};
       if (req && req.headers.cookie) {
         cookies = Cookies.parse(req.headers.cookie);
@@ -94,11 +100,11 @@ export default ({ $axios, env, store, req, res, query }, inject) => {
 
       const role = store.state.role || options.ROLE;
 
-      if (options.CACHE_ENABLED && role === 'guest') {
+      if (cache && role === 'guest') {
         const key = getCacheKey(config);
 
-        if (cache.has(key)) {
-          const data = cacheGet(cache, key);
+        try {
+          const data = await cacheGet(cache, key);
 
           config.data = data;
 
@@ -113,6 +119,8 @@ export default ({ $axios, env, store, req, res, query }, inject) => {
               config,
               request: config,
             });
+        } catch (error) {
+          //
         }
       }
 
@@ -126,14 +134,14 @@ export default ({ $axios, env, store, req, res, query }, inject) => {
   );
 
   api.onResponse(
-    (response) => {
+    async (response) => {
       if (response.headers['x-role']) {
         store.commit('ROLE', response.headers['x-role']);
       }
 
       const role = store.state.role || options.ROLE;
 
-      if (options.CACHE_ENABLED && role === 'guest') {
+      if (cache && role === 'guest') {
         let maxAge = options.CACHE_MAX_AGE;
 
         try {
