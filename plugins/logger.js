@@ -1,20 +1,18 @@
-import debugTrace from 'debug-trace';
+// import debugTrace from 'debug-trace';
 
-debugTrace({
-  always: true,
-});
+// debugTrace({
+//   always: true,
+// });
 
-if (process.client) {
-  console.format = (c) => `[${c.getFileName()}:${c.getLineNumber()}] `;
-}
+// if (process.client) {
+//   console.format = (c) => `[${c.getFileName()}:${c.getLineNumber()}] `;
+// }
 
 export default ({ env }, inject) => {
-  env = Object.assign(
-    {
-      LOG_LEVEL: 0,
-    },
-    env
-  );
+  env = {
+    LOG_LEVEL: 0,
+    ...env,
+  };
 
   const log = {};
   const logLevel = parseInt(env.LOG_LEVEL, 10);
