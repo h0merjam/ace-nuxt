@@ -46,6 +46,24 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
     ...env,
   };
 
+  let cookies = {};
+
+  if (req && req.headers.cookie) {
+    cookies = Cookies.parse(req.headers.cookie);
+  }
+
+  if (res && query.apiToken) {
+    let expires = new Date();
+    expires.setHours(expires.getHours() + 1);
+
+    res.setHeader(
+      'Set-Cookie',
+      Cookies.encode('apiToken', query.apiToken, {
+        expires,
+      })
+    );
+  }
+
   let cache;
 
   if (options.CACHE_ENABLED) {
@@ -55,7 +73,12 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
         maxBytes: options.CACHE_MAX_SIZE,
         maxAge: options.CACHE_MAX_AGE,
       });
+
       await cache.start();
+
+      if (query.apiToken || cookies.apiToken) {
+        await cache.reset();
+      }
     }
 
     if (process.client) {
@@ -76,25 +99,8 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
     },
   });
 
-  api.onRequest(
+  api.interceptors.request.use(
     async (config) => {
-      let cookies = {};
-      if (req && req.headers.cookie) {
-        cookies = Cookies.parse(req.headers.cookie);
-      }
-
-      if (res && query.apiToken) {
-        let expires = new Date();
-        expires.setHours(expires.getHours() + 1);
-
-        res.setHeader(
-          'Set-Cookie',
-          Cookies.encode('apiToken', query.apiToken, {
-            expires,
-          })
-        );
-      }
-
       config.headers.common['x-api-token'] =
         query.apiToken || cookies.apiToken || options.API_TOKEN;
 
@@ -133,7 +139,7 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
     }
   );
 
-  api.onResponse(
+  api.interceptors.response.use(
     async (response) => {
       if (response.headers['x-role']) {
         store.commit('ROLE', response.headers['x-role']);
@@ -159,9 +165,17 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
       return response;
     },
     (error) => {
+      if (error.config && error.response && error.response.status === 401) {
+        res.setHeader('Set-Cookie', Cookies.encode('apiToken', '', {}));
+
+        error.config.headers['x-api-token'] = options.API_TOKEN;
+
+        return api.request(error.config);
+      }
+
       // eslint-disable-next-line
       console.error(error);
-      return Promise.reject(error);
+      return Promise.resolve(error);
     }
   );
 
