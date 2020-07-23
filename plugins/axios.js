@@ -134,7 +134,7 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
     },
     (error) => {
       // eslint-disable-next-line
-      console.error(error);
+      // console.error(error);
       return Promise.reject(error);
     }
   );
@@ -165,7 +165,12 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
       return response;
     },
     (error) => {
-      if (error.config && error.response && error.response.status === 401) {
+      if (
+        error.config &&
+        error.response &&
+        error.response.status === 401 &&
+        error.config.headers['x-api-token'] !== options.API_TOKEN
+      ) {
         res.setHeader('Set-Cookie', Cookies.encode('apiToken', '', {}));
 
         error.config.headers['x-api-token'] = options.API_TOKEN;
@@ -174,7 +179,7 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
       }
 
       // eslint-disable-next-line
-      console.error(error);
+      // console.error(error);
       return Promise.resolve(error);
     }
   );
