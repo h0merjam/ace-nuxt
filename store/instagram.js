@@ -11,8 +11,11 @@ export const getters = {
   posts: (state) => (params = {}) =>
     sortBy(
       filter(state.posts, (post) => {
-        if (params.tag) {
-          return (post.caption || '').indexOf(params.tag) > -1;
+        if (params.tag.constructor === String) {
+          return (post.caption || '').includes(params.tag);
+        }
+        if (params.tag.constructor === RegExp) {
+          return params.tag.test(post.caption || '');
         }
         return true;
       }),
