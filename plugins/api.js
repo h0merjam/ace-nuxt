@@ -34,7 +34,7 @@ const cacheGet = async (cache, key) => JSON.parse(await cache.get(key));
 const cacheSet = async (cache, key, value) =>
   await cache.set(key, JSON.stringify(await value));
 
-export default async ({ $axios, env, store, req, res, query }, inject) => {
+export default async ({ $axios, $config, store, req, res, query }, inject) => {
   const options = {
     API_URL: '',
     API_TOKEN: '',
@@ -43,7 +43,7 @@ export default async ({ $axios, env, store, req, res, query }, inject) => {
     CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
     CACHE_MAX_SIZE: 50 * 1024 * 1024, // 50mb
     ROLE: 'guest',
-    ...env,
+    ...$config,
   };
 
   let cookies = {};

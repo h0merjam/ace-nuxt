@@ -1,9 +1,9 @@
 import Helpers from 'ace-helpers';
 
-export default ({ env }, inject) => {
+export default ({ $config }, inject) => {
   const helpers = new Helpers({
-    assistUrl: env.ASSIST_URL,
-    slug: env.SLUG,
+    assistUrl: $config.ASSIST_URL,
+    slug: $config.SLUG,
   });
 
   inject('helpers', helpers);

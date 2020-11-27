@@ -7,43 +7,45 @@ if (process.client) {
 }
 
 export default ({ app, store, req }, inject) => {
-  /*
-   ** User Agent
-   */
-  const ua = process.client
-    ? window.navigator.userAgent
-    : req.headers['user-agent'];
-  const userAgent = UAParser(ua);
+  let userAgent = {};
+  let device = {};
 
-  inject('userAgent', userAgent);
+  if (process.client || !process.static) {
+    /*
+     ** User Agent
+     */
+    const ua = process.client
+      ? window.navigator.userAgent
+      : req.headers['user-agent'];
 
-  if (process.client) {
-    document.documentElement.classList.add(kebabCase(userAgent.browser.name));
-    document.documentElement.classList.add(kebabCase(userAgent.os.name));
-  }
+    userAgent = UAParser(ua);
 
-  /*
-   ** Device Type
-   */
-  const md = new MobileDetect(ua);
-
-  const device = {
-    isMobile: !!md.mobile(),
-    isTablet: !!md.tablet(),
-    isDesktop: !!(!md.mobile() && !md.tablet()),
-  };
-
-  inject('device', device);
-
-  if (process.client) {
-    if (md.mobile()) {
-      document.documentElement.classList.add('mobile');
+    if (process.client) {
+      document.documentElement.classList.add(kebabCase(userAgent.browser.name));
+      document.documentElement.classList.add(kebabCase(userAgent.os.name));
     }
-    if (md.tablet()) {
-      document.documentElement.classList.add('tablet');
-    }
-    if (!md.mobile() && !md.tablet()) {
-      document.documentElement.classList.add('desktop');
+
+    /*
+     ** Device Type
+     */
+    const md = new MobileDetect(ua);
+
+    device = {
+      isMobile: !!md.mobile(),
+      isTablet: !!md.tablet(),
+      isDesktop: !!(!md.mobile() && !md.tablet()),
+    };
+
+    if (process.client) {
+      if (md.mobile()) {
+        document.documentElement.classList.add('mobile');
+      }
+      if (md.tablet()) {
+        document.documentElement.classList.add('tablet');
+      }
+      if (!md.mobile() && !md.tablet()) {
+        document.documentElement.classList.add('desktop');
+      }
     }
   }
 
@@ -117,15 +119,14 @@ export default ({ app, store, req }, inject) => {
     }
   );
 
-  app.$init(() => {
-    /*
-     ** User Agent
-     */
-    store.commit('USERAGENT', userAgent);
+  /*
+   ** Inject
+   */
+  inject('userAgent', userAgent);
+  inject('device', device);
 
-    /*
-     ** Device Type
-     */
+  app.$init(() => {
+    store.commit('USERAGENT', userAgent);
     store.commit('DEVICE', device);
   });
 };

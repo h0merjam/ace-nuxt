@@ -1,12 +1,11 @@
-export default ({ res, nuxtState }, inject) => {
+export default async (ctx, inject) => {
   const hooks = [];
 
   const init = async (hook) => {
     if (hook) {
       hooks.push(hook);
 
-      // Execute hook immediately in `spa` mode
-      if (!res && !nuxtState) {
+      if (process.static) {
         await hook();
       }
 
