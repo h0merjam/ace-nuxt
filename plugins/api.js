@@ -1,4 +1,4 @@
-import toPlainObject from 'lodash/toPlainObject';
+import { toPlainObject } from 'lodash';
 import hash from 'hash-obj';
 import * as Cookies from 'es-cookie';
 import Filru from 'filru';

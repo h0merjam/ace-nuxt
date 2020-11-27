@@ -1,6 +1,5 @@
 import Vue from 'vue';
-import filter from 'lodash/filter';
-import sortBy from 'lodash/sortBy';
+import { filter, sortBy } from 'lodash';
 import async from 'async';
 
 export const state = () => ({

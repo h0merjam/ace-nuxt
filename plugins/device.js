@@ -1,4 +1,4 @@
-import kebabCase from 'lodash/kebabCase';
+import { kebabCase } from 'lodash';
 import UAParser from 'ua-parser-js';
 import MobileDetect from 'mobile-detect';
 
@@ -97,7 +97,7 @@ export default ({ app, store, req }, inject) => {
    */
   if (process.client) {
     document.addEventListener('keydown', (event) => {
-      if (event.keyCode === 9) {
+      if (event.key === 'Tab' || event.keyCode === 9) {
         document.documentElement.classList.add('tabbed');
       }
     });

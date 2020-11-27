@@ -1,7 +1,5 @@
 import Vue from 'vue';
-import forEach from 'lodash/forEach';
-import isArray from 'lodash/isArray';
-import merge from 'lodash/merge';
+import { forEach, isArray, merge } from 'lodash';
 
 const nuxtServerInit = async ({ commit }, { app }) => {
   commit('INIT');

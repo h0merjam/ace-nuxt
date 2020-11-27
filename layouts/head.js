@@ -1,10 +1,12 @@
-import htmlToText from 'html-to-text';
+import { htmlToText } from 'html-to-text';
+import { truncate } from 'lodash';
 
 export default function () {
   const siteTitle = this.$config.SITE_TITLE || '';
   const titleChunk = this.$store.state.metadata.title;
-  const description = htmlToText.fromString(
-    this.$store.state.metadata.description
+  const description = truncate(
+    htmlToText(this.$store.state.metadata.description),
+    { length: 500 }
   );
   const image = this.$store.state.metadata.image;
 
