@@ -77,7 +77,7 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
       await cache.start();
 
       if (query.apiToken || cookies.apiToken) {
-        await cache.reset();
+        await cache.clear();
       }
     }
 
