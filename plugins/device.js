@@ -115,7 +115,14 @@ export default ({ app, store, req }, inject) => {
       selector,
       { block, behavior } = { block: 'start', behavior: 'smooth' }
     ) => {
-      document.querySelector(selector).scrollIntoView({ block, behavior });
+      const scrollToElement = document.querySelector(selector);
+
+      if (!scrollToElement) {
+        console.error('[$scrollTo]', `Element not found '${selector}'`);
+        return;
+      }
+
+      scrollToElement.scrollIntoView({ block, behavior });
     }
   );
 
