@@ -68,9 +68,9 @@ export default ({ app, store, req }, inject) => {
       () => {
         device.isLoaded = true;
 
-        store.commit('DEVICE', { isLoaded: true });
-
         document.documentElement.classList.add('loaded');
+
+        store.commit('DEVICE', { isLoaded: true });
       },
       { once: true }
     );
@@ -87,11 +87,6 @@ export default ({ app, store, req }, inject) => {
             '(orientation: portrait)'
           ).matches;
           device.isLandscape = !device.isPortrait;
-
-          store.commit('DEVICE', {
-            isPortrait: device.isPortrait,
-            isLandscape: device.isLandscape,
-          });
 
           document.documentElement.classList[
             device.isPortrait ? 'add' : 'remove'
@@ -114,6 +109,11 @@ export default ({ app, store, req }, inject) => {
             '--ah',
             `${availableHeight}px`
           );
+
+          store.commit('DEVICE', {
+            isPortrait: device.isPortrait,
+            isLandscape: device.isLandscape,
+          });
         },
         init ? 0 : 100
       );
@@ -132,13 +132,13 @@ export default ({ app, store, req }, inject) => {
     window.addEventListener('scroll', () => {
       device.isScrolled = window.scrollY > 0;
 
-      if (store.state.device.isScrolled !== device.isScrolled) {
-        store.commit('DEVICE', { isScrolled: device.isScrolled });
-      }
-
       document.documentElement.classList[device.isScrolled ? 'add' : 'remove'](
         'scrolled'
       );
+
+      if (store.state.device.isScrolled !== device.isScrolled) {
+        store.commit('DEVICE', { isScrolled: device.isScrolled });
+      }
     });
   }
 
@@ -150,17 +150,17 @@ export default ({ app, store, req }, inject) => {
       if (event.key === 'Tab' || event.keyCode === 9) {
         device.isTabbing = true;
 
-        store.commit('DEVICE', { isTabbing: device.isTabbing });
-
         document.documentElement.classList.add('tabbing');
+
+        store.commit('DEVICE', { isTabbing: device.isTabbing });
       }
     });
     document.addEventListener('mousedown', () => {
       device.isTabbing = false;
 
-      store.commit('DEVICE', { isTabbing: device.isTabbing });
-
       document.documentElement.classList.remove('tabbing');
+
+      store.commit('DEVICE', { isTabbing: device.isTabbing });
     });
   }
 
