@@ -8,7 +8,16 @@ if (process.client) {
 
 export default ({ app, store, req }, inject) => {
   let userAgent = {};
-  let device = {};
+  let device = {
+    isMobile: false,
+    isTablet: false,
+    isDesktop: false,
+    isLoaded: false,
+    isPortrait: false,
+    isLandscape: false,
+    isScrolled: false,
+    isTabbing: false,
+  };
 
   if (process.client || !process.static) {
     /*
@@ -26,11 +35,12 @@ export default ({ app, store, req }, inject) => {
     }
 
     /*
-     ** Device Type
+     ** Type
      */
     const md = new MobileDetect(ua);
 
     device = {
+      ...device,
       isMobile: !!md.mobile(),
       isTablet: !!md.tablet(),
       isDesktop: !!(!md.mobile() && !md.tablet()),
@@ -50,13 +60,16 @@ export default ({ app, store, req }, inject) => {
   }
 
   /*
-   ** Window Loaded
+   ** Loaded
    */
   if (process.client) {
     window.addEventListener(
       'load',
       () => {
+        device.isLoaded = true;
+
         store.commit('DEVICE', { isLoaded: true });
+
         document.documentElement.classList.add('loaded');
       },
       { once: true }
@@ -64,32 +77,67 @@ export default ({ app, store, req }, inject) => {
   }
 
   /*
-   ** Viewport Dimensions
+   ** Viewport
    */
   if (process.client) {
-    const setViewportVars = (event, init = false) => {
-      setTimeout(() => {
-        const availableHeight =
-          screen.height - (screen.height - window.innerHeight);
-        const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-        store.commit('DEVICE', { isPortrait, isLandscape: !isPortrait });
-        if (init) {
+    const updateViewport = (event, init = false) => {
+      setTimeout(
+        () => {
+          device.isPortrait = window.matchMedia(
+            '(orientation: portrait)'
+          ).matches;
+          device.isLandscape = !device.isPortrait;
+
+          store.commit('DEVICE', {
+            isPortrait: device.isPortrait,
+            isLandscape: device.isLandscape,
+          });
+
+          document.documentElement.classList[
+            device.isPortrait ? 'add' : 'remove'
+          ]('portrait');
+          document.documentElement.classList[
+            device.isLandscape ? 'add' : 'remove'
+          ]('landscape');
+
+          const availableHeight =
+            screen.height - (screen.height - window.innerHeight);
+
+          if (init) {
+            document.documentElement.style.setProperty(
+              '--ah-init',
+              `${availableHeight}px`
+            );
+          }
+
           document.documentElement.style.setProperty(
-            '--ah-init',
+            '--ah',
             `${availableHeight}px`
           );
-        }
-        document.documentElement.style.setProperty(
-          '--ah',
-          `${availableHeight}px`
-        );
-      }, 100);
+        },
+        init ? 0 : 100
+      );
     };
 
-    setViewportVars(null, true);
+    updateViewport(null, true);
 
-    window.addEventListener('orientationchange', setViewportVars);
-    window.addEventListener('resize', setViewportVars);
+    window.addEventListener('orientationchange', updateViewport);
+    window.addEventListener('resize', updateViewport);
+  }
+
+  /*
+   ** Scrolled
+   */
+  if (process.client) {
+    window.addEventListener('scroll', () => {
+      device.isScrolled = window.scrollY > 0;
+
+      store.commit('DEVICE', { isScrolled: device.isScrolled });
+
+      document.documentElement.classList[device.isScrolled ? 'add' : 'remove'](
+        'scrolled'
+      );
+    });
   }
 
   /*
@@ -98,33 +146,21 @@ export default ({ app, store, req }, inject) => {
   if (process.client) {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Tab' || event.keyCode === 9) {
-        document.documentElement.classList.add('tabbed');
+        device.isTabbing = true;
+
+        store.commit('DEVICE', { isTabbing: device.isTabbing });
+
+        document.documentElement.classList.add('tabbing');
       }
     });
     document.addEventListener('mousedown', () => {
-      document.documentElement.classList.remove('tabbed');
+      device.isTabbing = false;
+
+      store.commit('DEVICE', { isTabbing: device.isTabbing });
+
+      document.documentElement.classList.remove('tabbing');
     });
   }
-
-  /*
-   ** Scroll
-   */
-  inject(
-    'scrollTo',
-    (
-      selector,
-      { block, behavior } = { block: 'start', behavior: 'smooth' }
-    ) => {
-      const scrollToElement = document.querySelector(selector);
-
-      if (!scrollToElement) {
-        console.error('[$scrollTo]', `Element not found '${selector}'`);
-        return;
-      }
-
-      scrollToElement.scrollIntoView({ block, behavior });
-    }
-  );
 
   /*
    ** Inject
