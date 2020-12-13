@@ -132,7 +132,9 @@ export default ({ app, store, req }, inject) => {
     window.addEventListener('scroll', () => {
       device.isScrolled = window.scrollY > 0;
 
-      store.commit('DEVICE', { isScrolled: device.isScrolled });
+      if (store.state.device.isScrolled !== device.isScrolled) {
+        store.commit('DEVICE', { isScrolled: device.isScrolled });
+      }
 
       document.documentElement.classList[device.isScrolled ? 'add' : 'remove'](
         'scrolled'
