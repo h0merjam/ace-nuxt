@@ -56,12 +56,11 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
     let expires = new Date();
     expires.setHours(expires.getHours() + 1);
 
-    res.setHeader(
-      'Set-Cookie',
+    res.setHeader('Set-Cookie', [
       Cookies.encode('apiToken', query.apiToken, {
         expires,
-      })
-    );
+      }),
+    ]);
   }
 
   let cache;
@@ -171,7 +170,7 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
         error.response.status === 401 &&
         error.config.headers['x-api-token'] !== options.API_TOKEN
       ) {
-        res.setHeader('Set-Cookie', Cookies.encode('apiToken', '', {}));
+        res.setHeader('Set-Cookie', [Cookies.encode('apiToken', '', {})]);
 
         error.config.headers['x-api-token'] = options.API_TOKEN;
 
