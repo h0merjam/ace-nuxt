@@ -1,8 +1,16 @@
 import { toPlainObject } from 'lodash';
 import hash from 'hash-obj';
 import * as Cookies from 'es-cookie';
-import Filru from 'filru';
-import QuickLRU from 'quick-lru';
+
+let Filru;
+if (process.server) {
+  Filru = require('filru');
+}
+
+let QuickLRU;
+if (process.client) {
+  QuickLRU = require('quick-lru');
+}
 
 const getCacheKey = (config) => {
   let headers = {
