@@ -3,7 +3,7 @@ import UAParser from 'ua-parser-js';
 import MobileDetect from 'mobile-detect';
 
 if (process.client) {
-  require('feature.js');
+  window.feature = require('feature.js');
 }
 
 export default ({ app, store, req }, inject) => {
