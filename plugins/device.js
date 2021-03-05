@@ -7,7 +7,6 @@ if (process.client) {
 }
 
 export default ({ app, store, req }, inject) => {
-  let userAgent = {};
   let device = {
     isMobile: false,
     isTablet: false,
@@ -17,45 +16,46 @@ export default ({ app, store, req }, inject) => {
     isLandscape: false,
     isScrolled: false,
     isTabbing: false,
+    viewportWidth: 0,
+    viewportHeight: 0,
+    availableHeight: 0,
   };
 
-  if (process.client || !process.static) {
-    /*
-     ** User Agent
-     */
-    const ua = process.client
-      ? window.navigator.userAgent
-      : req.headers['user-agent'];
+  /*
+   ** User Agent
+   */
+  const ua = process.client
+    ? window.navigator.userAgent
+    : req.headers['user-agent'];
 
-    userAgent = UAParser(ua);
+  const userAgent = UAParser(ua);
 
-    if (process.client) {
-      document.documentElement.classList.add(kebabCase(userAgent.browser.name));
-      document.documentElement.classList.add(kebabCase(userAgent.os.name));
+  if (process.client) {
+    document.documentElement.classList.add(kebabCase(userAgent.browser.name));
+    document.documentElement.classList.add(kebabCase(userAgent.os.name));
+  }
+
+  /*
+   ** Type
+   */
+  const md = new MobileDetect(ua);
+
+  device = {
+    ...device,
+    isMobile: !!md.mobile(),
+    isTablet: !!md.tablet(),
+    isDesktop: !!(!md.mobile() && !md.tablet()),
+  };
+
+  if (process.client) {
+    if (md.mobile()) {
+      document.documentElement.classList.add('mobile');
     }
-
-    /*
-     ** Type
-     */
-    const md = new MobileDetect(ua);
-
-    device = {
-      ...device,
-      isMobile: !!md.mobile(),
-      isTablet: !!md.tablet(),
-      isDesktop: !!(!md.mobile() && !md.tablet()),
-    };
-
-    if (process.client) {
-      if (md.mobile()) {
-        document.documentElement.classList.add('mobile');
-      }
-      if (md.tablet()) {
-        document.documentElement.classList.add('tablet');
-      }
-      if (!md.mobile() && !md.tablet()) {
-        document.documentElement.classList.add('desktop');
-      }
+    if (md.tablet()) {
+      document.documentElement.classList.add('tablet');
+    }
+    if (!md.mobile() && !md.tablet()) {
+      document.documentElement.classList.add('desktop');
     }
   }
 
@@ -79,6 +79,15 @@ export default ({ app, store, req }, inject) => {
   /*
    ** Viewport
    */
+  device = {
+    ...device,
+    isPortrait: device.isMobile,
+    isLandscape: device.isDesktop,
+    viewportWidth: device.isMobile ? 375 : 1024,
+    viewportHeight: device.isMobile ? 667 : 768,
+    availableHeight: device.isMobile ? 667 : 768,
+  };
+
   if (process.client) {
     const updateViewport = (event, init = false) => {
       setTimeout(
@@ -113,6 +122,9 @@ export default ({ app, store, req }, inject) => {
           store.commit('DEVICE', {
             isPortrait: device.isPortrait,
             isLandscape: device.isLandscape,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            availableHeight,
           });
         },
         init ? 0 : 100
