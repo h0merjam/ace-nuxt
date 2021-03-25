@@ -26,7 +26,7 @@ export default ({ app, store, req }, inject) => {
    */
   const ua = process.client
     ? window.navigator.userAgent
-    : req.headers['user-agent'];
+    : req && req.headers['user-agent'];
 
   const userAgent = UAParser(ua);
 
