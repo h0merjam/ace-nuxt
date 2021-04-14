@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import { filter, sortBy } from 'lodash';
-import async from 'async';
+import { asyncify, series } from 'async';
 
 export const state = () => ({
   posts: {},
@@ -10,11 +10,13 @@ export const getters = {
   posts: (state) => (params = {}) =>
     sortBy(
       filter(state.posts, (post) => {
-        if (params.tag.constructor === String) {
-          return (post.caption || '').includes(params.tag);
-        }
-        if (params.tag.constructor === RegExp) {
-          return params.tag.test(post.caption || '');
+        if (params.tag) {
+          if (params.tag.constructor === String) {
+            return (post.caption || '').includes(params.tag);
+          }
+          if (params.tag.constructor === RegExp) {
+            return params.tag.test(post.caption || '');
+          }
         }
         return true;
       }),
@@ -48,10 +50,10 @@ export const actions = {
     let posts = [];
     let after;
 
-    let series = Array(Math.ceil(limit / 20)).fill(null);
+    let seriesTasks = Array(Math.ceil(limit / 20)).fill(null);
 
-    series = series.map(() =>
-      async.asyncify(async () => {
+    seriesTasks = seriesTasks.map(() =>
+      asyncify(async () => {
         const { data, paging } = await this.$api.$get(
           `${instagramApiBaseUrl}/${instagramUserId}/media`,
           {
@@ -70,7 +72,7 @@ export const actions = {
       })
     );
 
-    await new Promise((resolve) => async.series(series, resolve));
+    await new Promise((resolve) => series(seriesTasks, resolve));
 
     if (children) {
       await Promise.all(
