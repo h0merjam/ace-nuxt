@@ -18,7 +18,8 @@ export default ({ app, store, req }, inject) => {
     isTabbing: false,
     viewportWidth: 0,
     viewportHeight: 0,
-    availableHeight: 0,
+    availableViewportHeight: 0,
+    initialViewportHeight: 0,
   };
 
   /*
@@ -85,11 +86,13 @@ export default ({ app, store, req }, inject) => {
     isLandscape: device.isDesktop,
     viewportWidth: device.isMobile ? 375 : 1024,
     viewportHeight: device.isMobile ? 667 : 768,
-    availableHeight: device.isMobile ? 667 : 768,
+    availableViewportHeight: device.isMobile ? 667 : 768,
   };
 
+  device.initialViewportHeight = device.availableViewportHeight;
+
   if (process.client) {
-    const updateViewport = (event, init = false) => {
+    const updateViewport = (event, initial = false) => {
       setTimeout(
         () => {
           device.isPortrait = window.matchMedia(
@@ -104,19 +107,19 @@ export default ({ app, store, req }, inject) => {
             device.isLandscape ? 'add' : 'remove'
           ]('landscape');
 
-          const availableHeight =
+          const availableViewportHeight =
             screen.height - (screen.height - window.innerHeight);
 
-          if (init) {
+          if (initial) {
             document.documentElement.style.setProperty(
-              '--ah-init',
-              `${availableHeight}px`
+              '--initial-viewport-height',
+              `${availableViewportHeight}px`
             );
           }
 
           document.documentElement.style.setProperty(
-            '--ah',
-            `${availableHeight}px`
+            '--available-viewport-height',
+            `${availableViewportHeight}px`
           );
 
           store.commit('DEVICE', {
@@ -124,10 +127,11 @@ export default ({ app, store, req }, inject) => {
             isLandscape: device.isLandscape,
             viewportWidth: window.innerWidth,
             viewportHeight: window.innerHeight,
-            availableHeight,
+            availableViewportHeight,
+            initialViewportHeight: initial ? availableViewportHeight : undefined,
           });
         },
-        init ? 0 : 100
+        initial ? 0 : 100
       );
     };
 
