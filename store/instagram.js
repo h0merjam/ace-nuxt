@@ -60,7 +60,7 @@ export const actions = {
             params: {
               fields:
                 'id,media_type,media_url,thumbnail_url,caption,permalink,timestamp,username',
-              limit: 20,
+              limit: Math.min(limit, 20),
               after,
             },
           }
