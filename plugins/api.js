@@ -9,7 +9,7 @@ if (process.server) {
 
 let QuickLRU;
 if (process.client) {
-  QuickLRU = require('quick-lru');
+  QuickLRU = require('quick-lru').default;
 }
 
 const getCacheKey = (config) => {
