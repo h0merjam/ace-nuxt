@@ -27,7 +27,10 @@ export const getters = {
 export const mutations = {
   POSTS(state, posts) {
     posts.forEach((post) => {
-      Vue.set(state.posts, post.id, post);
+      Vue.set(state.posts, post.id, {
+        ...(state.posts[post.id] || {}),
+        ...post,
+      });
     });
   },
 };
