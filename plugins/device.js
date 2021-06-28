@@ -128,7 +128,9 @@ export default ({ app, store, req }, inject) => {
             viewportWidth: window.innerWidth,
             viewportHeight: window.innerHeight,
             availableViewportHeight,
-            initialViewportHeight: initial ? availableViewportHeight : undefined,
+            initialViewportHeight: initial
+              ? availableViewportHeight
+              : undefined,
           });
         },
         initial ? 0 : 100
@@ -163,7 +165,7 @@ export default ({ app, store, req }, inject) => {
    */
   if (process.client) {
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Tab' || event.keyCode === 9) {
+      if (!device.isTabbing && (event.key === 'Tab' || event.keyCode === 9)) {
         device.isTabbing = true;
 
         document.documentElement.classList.add('tabbing');
@@ -172,11 +174,13 @@ export default ({ app, store, req }, inject) => {
       }
     });
     document.addEventListener('mousedown', () => {
-      device.isTabbing = false;
+      if (device.isTabbing) {
+        device.isTabbing = false;
 
-      document.documentElement.classList.remove('tabbing');
+        document.documentElement.classList.remove('tabbing');
 
-      store.commit('DEVICE', { isTabbing: device.isTabbing });
+        store.commit('DEVICE', { isTabbing: device.isTabbing });
+      }
     });
   }
 
