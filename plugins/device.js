@@ -15,6 +15,8 @@ export default ({ app, store, req }, inject) => {
     isPortrait: false,
     isLandscape: false,
     isScrolled: false,
+    isScrolledUp: false,
+    isScrolledDown: false,
     isTabbing: false,
     viewportWidth: 0,
     viewportHeight: 0,
@@ -147,16 +149,38 @@ export default ({ app, store, req }, inject) => {
    ** Scrolled
    */
   if (process.client) {
+    let scrollYPrev = 0;
+
     window.addEventListener('scroll', () => {
       device.isScrolled = window.scrollY > 0;
-
-      document.documentElement.classList[device.isScrolled ? 'add' : 'remove'](
-        'scrolled'
-      );
+      device.isScrolledUp = window.scrollY < scrollYPrev;
+      device.isScrolledDown = window.scrollY > scrollYPrev;
 
       if (store.state.device.isScrolled !== device.isScrolled) {
         store.commit('DEVICE', { isScrolled: device.isScrolled });
+
+        document.documentElement.classList[
+          device.isScrolled ? 'add' : 'remove'
+        ]('scrolled');
       }
+
+      if (store.state.device.isScrolledUp !== device.isScrolledUp) {
+        store.commit('DEVICE', { isScrolledUp: device.isScrolledUp });
+
+        document.documentElement.classList[
+          device.isScrolledUp ? 'add' : 'remove'
+        ]('scrolled-up');
+      }
+
+      if (store.state.device.isScrolledDown !== device.isScrolledDown) {
+        store.commit('DEVICE', { isScrolledDown: device.isScrolledDown });
+
+        document.documentElement.classList[
+          device.isScrolledDown ? 'add' : 'remove'
+        ]('scrolled-down');
+      }
+
+      scrollYPrev = window.scrollY;
     });
   }
 
