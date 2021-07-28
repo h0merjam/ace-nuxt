@@ -218,4 +218,9 @@ export default ({ app, store, req }, inject) => {
     store.commit('USERAGENT', userAgent);
     store.commit('DEVICE', device);
   });
+
+  if (process.client) {
+    store.commit('USERAGENT', userAgent);
+    store.commit('DEVICE', device);
+  }
 };
