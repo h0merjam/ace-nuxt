@@ -18,9 +18,9 @@
   "author": "James Homer <hello@homerjam.es>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/h0merjam/ace-nuxt/issues"
+    "url": "https://github.com/homerjam/ace-nuxt/issues"
   },
-  "homepage": "https://github.com/h0merjam/ace-nuxt#readme",
+  "homepage": "https://github.com/homerjam/ace-nuxt#readme",
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "eslint": "^7.26.0",
@@ -31,6 +31,7 @@
   "dependencies": {
     "ace-helpers": "^0.4.0",
     "async": "^3.2.0",
+    "axios-curlirize": "^2.0.0",
     "debug-trace": "^2.2.2",
     "es-cookie": "^1.3.2",
     "feature.js": "^1.0.0",

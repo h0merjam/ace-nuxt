@@ -1,6 +1,7 @@
 import { toPlainObject } from 'lodash';
 import hash from 'hash-obj';
 import * as Cookies from 'es-cookie';
+import curlirize from 'axios-curlirize';
 
 let Filru;
 if (process.server) {
@@ -106,8 +107,12 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
     },
   });
 
+  curlirize(api);
+
   api.interceptors.request.use(
     async (config) => {
+      config.curlirize = false;
+
       config.headers.common['x-api-token'] =
         query.apiToken || cookies.apiToken || options.API_TOKEN;
 
@@ -186,7 +191,9 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
       }
 
       // eslint-disable-next-line
-      // console.error(error);
+      console.error('ApiError', error.response.status);
+      console.error(error.response.data);
+      console.error(error.response.config.curlCommand);
       return Promise.resolve(error);
     }
   );
