@@ -193,7 +193,11 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
       // eslint-disable-next-line
       console.error('ApiError', error.response.status);
       console.error(error.response.data);
-      console.error(error.response.config.curlCommand);
+      console.error(
+        error.response.config.curlCommand,
+        `-H "X-Api-Token: ${error.response.config.headers['x-api-token']}"`,
+        `-H "Content-Type: application/json"`
+      );
       return Promise.resolve(error);
     }
   );
