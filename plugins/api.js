@@ -19,6 +19,14 @@ const getCacheKey = (config) => {
     ...(config.headers || {}),
   };
 
+  delete headers.common;
+  delete headers.delete;
+  delete headers.get;
+  delete headers.head;
+  delete headers.post;
+  delete headers.put;
+  delete headers.patch;
+
   let data = config.data;
 
   try {
@@ -30,7 +38,7 @@ const getCacheKey = (config) => {
   const hashObj = {
     method: config.method,
     url: config.url.replace(config.baseURL, ''),
-    token: headers['x-api-token'],
+    token: headers['X-Api-Token'],
     params: config.params,
     data,
   };
@@ -102,7 +110,7 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
     baseURL: options.API_URL,
     headers: {
       common: {
-        'x-api-token': options.API_TOKEN,
+        'X-Api-Token': options.API_TOKEN,
       },
     },
   });
@@ -113,7 +121,7 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
     async (config) => {
       config.curlirize = false;
 
-      config.headers.common['x-api-token'] =
+      config.headers['X-Api-Token'] =
         query.apiToken || cookies.apiToken || options.API_TOKEN;
 
       const role = store.state.role || options.ROLE;
@@ -128,8 +136,8 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
 
           // Set the request adapter to send the cached response
           // and prevent the request from actually running
-          config.adapter = () =>
-            Promise.resolve({
+          config.adapter = () => {
+            return Promise.resolve({
               data,
               status: config.status,
               statusText: config.statusText,
@@ -137,8 +145,10 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
               config,
               request: config,
             });
+          };
         } catch (error) {
           //
+          // console.error(error);
         }
       }
 
@@ -181,11 +191,14 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
         error.config &&
         error.response &&
         error.response.status === 401 &&
-        error.config.headers['x-api-token'] !== options.API_TOKEN
+        error.config.headers['X-Api-Token'] !== options.API_TOKEN
       ) {
+        query.apiToken = '';
+        cookies.apiToken = '';
+
         res.setHeader('Set-Cookie', [Cookies.encode('apiToken', '', {})]);
 
-        error.config.headers['x-api-token'] = options.API_TOKEN;
+        error.config.headers['X-Api-Token'] = options.API_TOKEN;
 
         return api.request(error.config);
       }
@@ -195,7 +208,7 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
       console.error(error.response.data);
       console.error(
         error.response.config.curlCommand,
-        `-H "X-Api-Token: ${error.response.config.headers['x-api-token']}"`,
+        `-H "X-Api-Token: ${error.response.config.headers['X-Api-Token']}"`,
         `-H "Content-Type: application/json"`
       );
       return Promise.resolve(error);
