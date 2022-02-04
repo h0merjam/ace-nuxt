@@ -27,23 +27,17 @@ const getCacheKey = (config) => {
   delete headers.put;
   delete headers.patch;
 
-  let data = config.data;
-
-  try {
-    data = JSON.parse(data);
-  } catch (error) {
-    //
-  }
-
   const hashObj = {
     method: config.method,
     url: config.url.replace(config.baseURL, ''),
     token: headers['X-Api-Token'],
-    params: config.params,
-    data,
+    params: config.params || {},
+    body: config.body || {},
   };
 
-  return hash(toPlainObject(hashObj));
+  const hashStr = hash(toPlainObject(hashObj));
+
+  return hashStr;
 };
 
 const cacheGet = async (cache, key) => JSON.parse(await cache.get(key));
@@ -119,6 +113,8 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
 
   api.interceptors.request.use(
     async (config) => {
+      config.body = config.data;
+
       config.curlirize = false;
 
       config.headers['X-Api-Token'] =
