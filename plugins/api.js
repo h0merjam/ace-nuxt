@@ -54,7 +54,7 @@ export default async ({ $axios, $config, store, req, res, query }, inject) => {
     CACHE_MAX_AGE: 30 * 60 * 1000, // 30 mins
     CACHE_MAX_SIZE: 50 * 1024 * 1024, // 50mb
     ROLE: 'guest',
-    ...$config,
+    ...$config.public,
   };
 
   let cookies = {};
